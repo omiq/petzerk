@@ -35,8 +35,8 @@ Petzerk brings the arcade action of Bezerk to the vintage Commodore PET. Navigat
 
 ## Files
 
-- `petzerk.bas` — Source code (XC-BASIC)
-- `petzerk.c`  — Example mockup screen layout as C data file
+- `petzerk.bas`: Source code (XC-BASIC)
+- `petzerk.c`: Example mockup screen layout as C data file
 
 ---
 ## License
