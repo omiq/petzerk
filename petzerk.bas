@@ -66,22 +66,23 @@ DO WHILE GAME_OVER <> 1
   END IF
 
   IF BF=1 THEN
+      REM Erase bullet at current position
       BOFFSET=32768+(40*BY)+BX
       POKE BOFFSET,32
 
       IF BY >= 0 AND BY <= 24 AND BX >= 0 AND BX <= 39 THEN 
         BY=BY+BYDIR
         BX=BX+BXDIR
+        REM Draw bullet at new position only
+        BOFFSET=32768+(40*BY)+BX
+        IF PEEK(BOFFSET)<>32 THEN 
+          POKE BOFFSET,32
+          BF=0 
+        ELSE
+          POKE BOFFSET,34
+        END IF
       ELSE 
         BF=0
       END IF
-
-      IF PEEK(BOFFSET)<>32 THEN 
-        POKE BOFFSET,32
-        BF=0 
-      ELSE
-        POKE BOFFSET,34
-      END IF
-
   END IF
 LOOP
