@@ -1,6 +1,6 @@
 # Petzerk
 
-**Petzerk BASIC 1.0** — A recreation of the classic game *Bezerk* by Atari, written in XC-BASIC for the Commodore PET.
+**Petzerk BASIC 1.0** — REM Recreation of the classic arcadegame "Bezerk" in XC-BASIC for the Commodore PET
 
 ![Petzerk Screenshot](petzerk.png)
 
@@ -10,7 +10,7 @@
 
 ## Overview
 
-Petzerk brings the arcade action of Atari's Bezerk to the vintage Commodore PET. Navigate maze corridors, blast enemies with your laser, and avoid being eliminated.
+Petzerk brings the arcade action of Bezerk to the vintage Commodore PET. Navigate maze corridors, blast enemies with your laser, and avoid being eliminated.
 
 ## Requirements
 
