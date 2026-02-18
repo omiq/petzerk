@@ -114,7 +114,7 @@ DO WHILE GAME_OVER <> 1
       BOFFSET=32768+(40*BY)+BX
       POKE BOFFSET,32
 
-      IF BY >= 0 AND BY <= 24 AND BX >= 0 AND BX <= 39 THEN 
+      IF BY > 1 AND BY < 18 AND BX > 1 AND BX < 18 THEN 
         BY=BY+BYDIR
         BX=BX+BXDIR
         REM Draw bullet at new position only
