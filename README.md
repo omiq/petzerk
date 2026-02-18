@@ -1,6 +1,6 @@
-# Petzerk
+# PETZerk
 
-**Petzerk BASIC 1.0** — "Demake" / Recreation of the classic arcadegame "Bezerk" in XC-BASIC for the Commodore PET
+**PETZerk** - "Demake" / Recreation of the classic arcadegame "Bezerk" in XC-BASIC for the Commodore PET
 
 ![Petzerk Screenshot](petzerk.png)
 
