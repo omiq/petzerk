@@ -1,4 +1,4 @@
-REM Petzerk BASIC 1.3
+REM Petzerk v1.3
 REM Recreation of the classic arcadegame "Bezerk" in XC-BASIC for the Commodore PET
 REM Chris Garrett 2026
 REM RetroGameCoders.com
@@ -29,7 +29,7 @@ REM ROOM:
 DIM ROOM(20, 20) AS BYTE
 FOR Y=0 TO 19
   FOR X=0 TO 19
-    IF Y=0 OR Y=19 OR X=0 OR X=19 THEN ROOM(Y,X)=35 ELSE ROOM(Y,X)=32
+    IF Y=0 OR Y=19 OR X=0 OR X=19 THEN ROOM(Y,X)=230 ELSE ROOM(Y,X)=32
   NEXT X
 NEXT Y
 
@@ -61,7 +61,7 @@ FOR I=0 TO 5
 NEXT I
 
 REM Draw the room
-PRINT CHR$(147)
+PRINT CHR$(147);CHR$(142)
 FOR Y=0 TO 19
   FOR X=0 TO 19
     POKE SCREENADDRESS+(40*Y)+X,ROOM(Y,X)
@@ -126,7 +126,7 @@ DO WHILE GAME_OVER <> 1
           POKE BOFFSET,32
           BF=0 
         ELSE
-          POKE BOFFSET,34
+          POKE BOFFSET,42
         END IF
       ELSE 
         BF=0
