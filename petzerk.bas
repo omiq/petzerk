@@ -1,3 +1,9 @@
+REM Petzerk BASIC 1.0
+REM Recreation of the classic game "Bezerk" by Atari in XC-BASIC for the Commodore PET
+REM Chris Garrett 2026
+REM RetroGameCoders.com
+REM ========================================================
+
 DIM X AS INT
 DIM Y AS INT
 DIM OLDX AS INT
