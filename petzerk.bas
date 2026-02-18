@@ -15,7 +15,7 @@ DIM BX AS INT
 DIM BY AS INT
 DIM BF AS INT
 DIM BOFFSET AS LONG
-REM In Bezerk, the bullet moves in the direction of the player including diagonals
+REM Bullet fires N, S, E or W in the direction the player last moved
 DIM BXDIR AS INT 
 DIM BYDIR AS INT 
 DIM LASTXDIR AS INT
@@ -59,8 +59,8 @@ DO WHILE GAME_OVER <> 1
 
         
   IF OLDX<>X OR OLDY<>Y THEN 
-  	IF X<>OLDX THEN LASTXDIR=X-OLDX
-  	IF Y<>OLDY THEN LASTYDIR=Y-OLDY
+  	LASTXDIR=X-OLDX
+  	LASTYDIR=Y-OLDY
   	POKE 32768+(40*OLDY)+OLDX,32
   	POKE 32768+(40*Y)+X,65
   END IF
