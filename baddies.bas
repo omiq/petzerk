@@ -1,3 +1,15 @@
+REM Petvaders v1
+REM Recreation of the classic arcadegame "space invaders" in XC-BASIC
+REM for the Commodore PET
+REM Chris Garrett 2026
+REM RetroGameCoders.com
+REM ========================================================
+
+REM SCREEN ADDRESS SO MORE PORTABLE
+CONST SCREENADDRESS = 32768
+
+
+
 REM BADDIES:
 TYPE ALIEN
   X AS INT
@@ -24,6 +36,8 @@ GAME_OVER = 0
 DIM SCORE AS INT: SCORE=0
 DIM HIGH_SCORE AS INT: HIGH_SCORE=0
 
+REM C IS CHARACTER READ FROM THE SCREEN
+DIM C AS BYTE: C=32
 
 
 REM 5 ROWS OF 10 ALIENS
@@ -82,6 +96,8 @@ POKE 32768+(40*Y)+X,65
   REM GAMEPLAY LOOP
   DO WHILE GAME_OVER <> 1 AND LIVES > 0
 
+
+    REM PLAYER MOVEMENT 
     OLDX=X
     OLDY=Y
     
@@ -108,6 +124,7 @@ POKE 32768+(40*Y)+X,65
       POKE 32768+(40*Y)+X,65
     END IF
 
+    REM BULLET MOVEMENT
     IF BF=1 THEN
       POKE 32768+(40*BY)+BX,32
 
@@ -117,6 +134,7 @@ POKE 32768+(40*Y)+X,65
             BF=0
           END IF
 
+    REM PLAYER BULLET COLLISION CHECK
     IF PEEK(32768+(40*BY)+BX)<>32 THEN 
             POKE 32768+(40*BY)+BX,32
             BF=0 
