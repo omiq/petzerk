@@ -9,6 +9,7 @@ TYPE ALIEN
 END TYPE
 
 REM INITIALISE
+DIM LIVES AS INT: LIVES=3
 DIM X AS INT
 DIM Y AS INT
 DIM OLDX AS INT
@@ -20,10 +21,10 @@ X=10
 Y=10
 K$=""
 GAME_OVER = 0
+DIM SCORE AS INT: SCORE=0
+DIM HIGH_SCORE AS INT: HIGH_SCORE=0
 
-REM SCREEN
-PRINT CHR$(147);CHR$(142)
-POKE 32768+(40*Y)+X,65
+
 
 REM 5 ROWS OF 10 ALIENS
 DIM ALIENS(50) AS ALIEN
@@ -42,6 +43,25 @@ DIM ALIEN_CHAR AS BYTE: ALIEN_CHAR=13
 
 REM ALIENS SWITCH BETWEEN M AND W ON EACH FRAME
 DIM FAST I AS BYTE
+
+REM INFINITE LOOP FOR THE GAME OUTER LOOP 
+DO WHILE 1
+
+REM RESET THE PLAYER AND GAME VARIABLES
+LIVES=3: GAME_OVER=0: SCORE=0 
+
+REM SCREEN
+PRINT CHR$(147);CHR$(142)
+PRINT "petvaders"
+PRINT "chris garrett 2026 retrogamecoders.com"
+PRINT "press a key to play"
+
+K$=""
+DO WHILE K$=""
+  GET K$
+LOOP
+PRINT CHR$(147);
+
 FOR I=0 TO 49
   ALIENS(I).X=(I MOD 10)*2
   ALIENS(I).Y=(I / 10)*2
@@ -57,51 +77,65 @@ FOR I=0 TO 49
   POKE 32768+(40*ALIENS(I).Y)+ALIENS(I).X,ALIEN_CHAR
 
 NEXT I
+POKE 32768+(40*Y)+X,65
 
+  REM GAMEPLAY LOOP
+  DO WHILE GAME_OVER <> 1 AND LIVES > 0
 
+    OLDX=X
+    OLDY=Y
+    
+    GET K$
+    IF K$="Q" OR K$="q" THEN GAME_OVER = 1
+    IF K$="D" OR K$="d" THEN X=X+1
+    IF K$="A" OR K$="a" THEN X=X-1
+    IF K$="W" OR K$="w" THEN Y=Y-1
+    IF K$="S" OR K$="s" THEN Y=Y+1
+    IF K$=" " THEN 
+      BX=X
+    BY=Y-1
+      BF=1
+    END IF
+    
+    IF PEEK(32768+(40*Y)+X)<>32 THEN
+      X=OLDX
+      Y=OLDY
+    END IF
 
-DO WHILE GAME_OVER <> 1
+          
+    IF OLDX<>X OR OLDY<>Y THEN 
+      POKE 32768+(40*OLDY)+OLDX,32
+      POKE 32768+(40*Y)+X,65
+    END IF
 
-  OLDX=X
-  OLDY=Y
-  
+    IF BF=1 THEN
+      POKE 32768+(40*BY)+BX,32
+
+          IF BY >= 0 THEN 
+            BY=BY-1
+      ELSE 
+            BF=0
+          END IF
+
+    IF PEEK(32768+(40*BY)+BX)<>32 THEN 
+            POKE 32768+(40*BY)+BX,32
+            BF=0 
+    ELSE
+        POKE 32768+(40*BY)+BX,34
+          END IF
+    END IF
+  LOOP
+
+REM GAME OVER SCREEN
+PRINT CHR$(147)
+PRINT "game over!"
+PRINT "score: ";SCORE
+PRINT "high score: ";HIGH_SCORE
+PRINT "press a key to continue"
+K$=""
+DO WHILE K$=""
   GET K$
-  IF K$="Q" OR K$="q" THEN GAME_OVER = 1
-  IF K$="D" OR K$="d" THEN X=X+1
-  IF K$="A" OR K$="a" THEN X=X-1
-  IF K$="W" OR K$="w" THEN Y=Y-1
-  IF K$="S" OR K$="s" THEN Y=Y+1
-  IF K$=" " THEN 
-  	BX=X
-	BY=Y-1
-  	BF=1
-  END IF
-  
-  IF PEEK(32768+(40*Y)+X)<>32 THEN
-  	X=OLDX
-  	Y=OLDY
-  END IF
+LOOP
 
-        
-  IF OLDX<>X OR OLDY<>Y THEN 
-  	POKE 32768+(40*OLDY)+OLDX,32
-  	POKE 32768+(40*Y)+X,65
-  END IF
-
-  IF BF=1 THEN
-  	POKE 32768+(40*BY)+BX,32
-
-        IF BY >= 0 THEN 
-        	BY=BY-1
-  	ELSE 
-        	BF=0
-        END IF
-
-	IF PEEK(32768+(40*BY)+BX)<>32 THEN 
-        	POKE 32768+(40*BY)+BX,32
-        	BF=0 
-	ELSE
-	  	POKE 32768+(40*BY)+BX,34
-        END IF
-  END IF
+REM OUTER LOOP FOR THE GAME
 LOOP
