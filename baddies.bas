@@ -37,18 +37,25 @@ REM when we move the aliens we use these bounds so we know when
 REM to change direction and move down a row. 
 
 
-REM column stride: 2 = one space between columns, 3 = two spaces, etc.
-DIM COL_STRIDE AS INT: COL_STRIDE=2
+REM ALIEN_CHAR is the character to use for the alien
+DIM ALIEN_CHAR AS BYTE: ALIEN_CHAR=13
 
 REM ALIENS SWITCH BETWEEN M AND W ON EACH FRAME
 DIM FAST I AS BYTE
 FOR I=0 TO 49
-  ALIENS(I).X=(I MOD 10)*COL_STRIDE
-  ALIENS(I).Y=I / 10
+  ALIENS(I).X=(I MOD 10)*2
+  ALIENS(I).Y=(I / 10)*2
   ALIENS(I).STATE=1
   ALIENS(I).BULLETX=0
   ALIENS(I).BULLETY=0
-  POKE 32768+(40*ALIENS(I).Y)+ALIENS(I).X,13
+  REM ALTERNATE BETWEEN M AND W (13/23) AND SWITCH ON EACH FRAME
+  IF I MOD 2 = 0 THEN
+    ALIEN_CHAR = 13
+  ELSE
+    ALIEN_CHAR = 23
+  END IF
+  POKE 32768+(40*ALIENS(I).Y)+ALIENS(I).X,ALIEN_CHAR
+
 NEXT I
 
 
