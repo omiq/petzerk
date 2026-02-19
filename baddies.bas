@@ -51,11 +51,11 @@ REM to change direction and move down a row.
 
 
 REM ALIEN_CHAR is the character to use for the alien
-DIM ALIEN_CHAR AS BYTE: ALIEN_CHAR=13
-
 REM ALIENS SWITCH BETWEEN M AND W ON EACH FRAME
-DIM FAST I AS BYTE
 
+DIM ALIEN_CHAR AS BYTE: ALIEN_CHAR=13
+DIM FAST I AS BYTE
+DIM FAST A AS BYTE
 
 REM MOVE THE ACTIVE ALIENS WITHIN THE BOUNDS
 SUB MOVE_ALIENS()
@@ -141,7 +141,7 @@ POKE SCREENADDRESS+(40*Y)+X,65
     IF K$="S" OR K$="s" THEN Y=Y+1
     IF K$=" " AND BF=0 THEN 
       BX=X
-    BY=Y-1
+      BY=Y-1
       BF=1
     END IF
     
@@ -174,14 +174,14 @@ POKE SCREENADDRESS+(40*Y)+X,65
               IF C=13 OR C=23 THEN 
                 SCORE=SCORE+10
                 REM WHICH ALIEN WAS HIT?  
-                FOR I=0 TO 49
-                  IF ALIENS(I).STATE=1 THEN
-                    IF ALIENS(I).X=BX AND ALIENS(I).Y=BY THEN
-                      ALIENS(I).STATE=0
+                FOR A=0 TO 49
+                  IF ALIENS(A).STATE=1 THEN
+                    IF ALIENS(A).X=BX AND ALIENS(A).Y=BY THEN
+                      ALIENS(A).STATE=0
                       EXIT FOR  : REM BREAK OUT OF THE LOOP
                     END IF
                   END IF
-                NEXT I           
+                NEXT A           
               END IF
               BF=0 
       ELSE
