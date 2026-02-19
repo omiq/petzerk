@@ -67,8 +67,8 @@ LIVES=3: GAME_OVER=0: SCORE=0
 REM SCREEN
 PRINT CHR$(147);CHR$(142)
 PRINT "petvaders"
-PRINT "chris garrett 2026 retrogamecoders.com"
-PRINT "press a key to play"
+PRINT "chris garrett 2026{13}retrogamecoders.com"
+PRINT "{13}{13}press a key to play"
 
 K$=""
 DO WHILE K$=""
