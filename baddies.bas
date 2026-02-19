@@ -131,35 +131,38 @@ POKE SCREENADDRESS+(40*Y)+X,65
       POKE SCREENADDRESS+(40*Y)+X,65
     END IF
 
-    REM BULLET MOVEMENT
-    IF BF=1 THEN
-      POKE SCREENADDRESS+(40*BY)+BX,32
+      REM BULLET MOVEMENT
+      IF BF=1 THEN
+        POKE SCREENADDRESS+(40*BY)+BX,32
 
-          IF BY >= 0 THEN 
-            BY=BY-1
-      ELSE 
-            BF=0
-          END IF
-
-    REM PLAYER BULLET COLLISION CHECK
-    C=PEEK(SCREENADDRESS+(40*BY)+BX)
-    IF C<>32 THEN 
-            POKE SCREENADDRESS+(40*BY)+BX,32
-            IF C=13 OR C=23 THEN 
-              SCORE=SCORE+10
-              REM WHICH ALIEN WAS HIT?
-              FOR I=0 TO 49
-                IF ALIENS(I).STATE=1 THEN
-                  IF ALIENS(I).X=BX AND ALIENS(I).Y=BY THEN
-                    ALIENS(I).STATE=0
-                    BREAK
-                  END IF
-                END IF
-              NEXT I
+            IF BY >= 0 THEN 
+              BY=BY-1
+        ELSE 
+              BF=0
             END IF
-            BF=0 
-    ELSE
-        POKE SCREENADDRESS+(40*BY)+BX,34
+
+      REM PLAYER BULLET COLLISION CHECK
+      C=PEEK(SCREENADDRESS+(40*BY)+BX)
+      IF C<>32 THEN 
+
+              POKE SCREENADDRESS+(40*BY)+BX,32
+              IF C=13 OR C=23 THEN 
+                SCORE=SCORE+10
+                REM WHICH ALIEN WAS HIT?  
+                FOR I=0 TO 49
+                  IF ALIENS(I).STATE=1 THEN
+                    IF ALIENS(I).X=BX AND ALIENS(I).Y=BY THEN
+                      ALIENS(I).STATE=0
+                      EXIT FOR  : REM BREAK OUT OF THE LOOP
+                    END IF
+                  END IF
+                NEXT I           
+              END IF
+              BF=0 
+      ELSE
+          POKE SCREENADDRESS+(40*BY)+BX,34
+      END IF
+
     END IF
   LOOP
 
