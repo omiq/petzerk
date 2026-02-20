@@ -230,7 +230,7 @@ POKE SCREENADDRESS+(40*Y)+X,65
     IF SCORE<>OLDSCORE OR LIVES<>OLDLIVES OR LIVE_CNT<>OLDALIENS THEN
       OLDSCORE=SCORE: OLDLIVES=LIVES: OLDALIENS=LIVE_CNT
       TEXTAT 0,24,"                                                 "
-      TEXTAT 0,24,"{rvs on}score{rvs off}:"+STR$(SCORE)+" {rvs on}lives{rvs off}:"+STR$(LIVES)+" {rvs on}high score{rvs off}:"+STR$(HIGH_SCORE)+" aliens: "+STR$(LIVE_CNT)
+      TEXTAT 0,24,"{rvs on}score{rvs off}:"+STR$(SCORE)+" {rvs on}lives{rvs off}:"+STR$(LIVES)+" {rvs on}high{rvs off}:"+STR$(HIGH_SCORE)+" aliens: "+STR$(LIVE_CNT)
     
     END IF
     
@@ -248,7 +248,7 @@ POKE SCREENADDRESS+(40*Y)+X,65
     IF K$="S" OR K$="s" THEN Y=Y+1
     IF K$=" " THEN 
       BX=X
-      BY=Y-1
+      BY=Y
       BF=1
     END IF
     
