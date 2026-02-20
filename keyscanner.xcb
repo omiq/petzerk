@@ -1,0 +1,90 @@
+' ------------------------------------------------------------
+' PET keyboard scanning for XC=BASIC3 based on my PETFrog game
+'
+' Chris Garrett 2026 RetroGameCoders.com
+'
+' Reads 4032 PET Graphic 10-row keyboard matrix via:
+'   $E810 (59408) write row number 0..9
+'   $E812 (59410) read column bits (active low)
+' ------------------------------------------------------------
+
+CONST KEYROW  = 59408  ' $E810
+CONST KEYREAD = 59410  ' $E812
+
+DIM KEYS(10) AS BYTE
+DIM KEYSLAST(10) AS BYTE
+DIM KEYSPRESSED(10) AS BYTE
+
+DIM R AS BYTE
+DIM V AS BYTE
+
+SUB READKEYBOARD()
+    FOR R = 0 TO 9
+        POKE KEYROW, R
+        V = PEEK(KEYREAD) XOR 255        ' pressed bits become 1
+
+        KEYS(R) = V
+
+        ' edge detect: newly pressed = (changed) AND (current down)
+        KEYSPRESSED(R) = (V XOR KEYSLAST(R)) AND V
+        KEYSLAST(R) = V
+    NEXT R
+END SUB
+
+FUNCTION KEYDOWN AS BYTE (ROW AS BYTE, COL AS BYTE)
+    IF (KEYS(ROW) AND SHL(1, COL)) <> 0 THEN RETURN 1
+    RETURN 0
+END FUNCTION
+
+FUNCTION KEYPRESSED AS BYTE (ROW AS BYTE, COL AS BYTE)
+    IF (KEYSPRESSED(ROW) AND SHL(1, COL)) <> 0 THEN RETURN 1
+    RETURN 0
+END FUNCTION
+
+' ------------------------------------------------------------
+' Control mapping (from my TRSE PET "graphic" keyboard table)
+' ------------------------------------------------------------
+CONST W_ROW  = 3 : CONST W_COL  = 0
+CONST A_ROW  = 4 : CONST A_COL  = 0
+CONST S_ROW  = 5 : CONST S_COL  = 0
+CONST D_ROW  = 4 : CONST D_COL  = 1
+CONST Q_ROW  = 2 : CONST Q_COL  = 0
+CONST SP_ROW = 9 : CONST SP_COL = 2
+
+' ------------------------------------------------------------
+' Demo program: prints movement (supports diagonals), fire, quit
+' ------------------------------------------------------------
+DIM DX AS INT
+DIM DY AS INT
+
+PRINT CHR$(147)
+PRINT "wasd move, space fire, q quit"
+
+DO
+
+    CALL READKEYBOARD()
+
+    DX = 0
+    DY = 0
+
+    IF KEYDOWN(W_ROW, W_COL) THEN DY = DY - 1
+    IF KEYDOWN(S_ROW, S_COL) THEN DY = DY + 1
+    IF KEYDOWN(A_ROW, A_COL) THEN DX = DX - 1
+    IF KEYDOWN(D_ROW, D_COL) THEN DX = DX + 1
+
+    ' diagonals work because DX and DY can both be non-zero
+    IF (DX <> 0) OR (DY <> 0) THEN
+        PRINT "move "; DX; ","; DY
+    END IF
+
+    ' fire: show both held and just-pressed examples
+    IF KEYPRESSED(SP_ROW, SP_COL) THEN PRINT "fire (pressed)"
+    IF KEYDOWN(SP_ROW, SP_COL) THEN PRINT "fire (held)"
+
+    ' quit
+    IF KEYPRESSED(Q_ROW, Q_COL) THEN EXIT DO
+
+LOOP
+
+PRINT "bye!"
+END
