@@ -116,9 +116,6 @@ REM ALIENS SWITCH BETWEEN M AND W ON EACH FRAME
 DIM ALIEN_CHAR AS BYTE: ALIEN_CHAR=13
 DIM FAST I AS BYTE
 DIM FAST A AS BYTE
-DIM FOUND AS BYTE
-DIM AX AS INT
-DIM AY AS INT
 DIM LEFTMOST_COL AS INT
 DIM RIGHTMOST_COL AS INT
 
@@ -241,7 +238,10 @@ POKE SCREENADDRESS+(40*Y)+X,65
 
     REM '
     GET K$
-    IF K$="Q" OR K$="q" THEN GAME_OVER = 1
+    IF K$="Q" OR K$="q" THEN
+      LIVES=0 
+      GAME_OVER = 1
+    END IF
     IF K$="D" OR K$="d" THEN X=X+1
     IF K$="A" OR K$="a" THEN X=X-1
     IF K$="W" OR K$="w" THEN Y=Y-1
@@ -282,25 +282,14 @@ POKE SCREENADDRESS+(40*Y)+X,65
 
         POKE SCREENADDRESS+(40*BY)+BX,32
               IF C=13 OR C=23 THEN
-                REM Find alien at (BX,BY) by matching screen position
-                FOUND=0
-                FOR A=0 TO 49
-                  IF FOUND=0 AND ALIENS(A).STATE=1 THEN
-
-                    AX=ALIEN_BASE+ALIENS(A).X
-                    AY=ALIENS(A).Y
-                    IF AX=BX AND AY=BY THEN
-                      ALIENS(A).STATE=0
-                      SCORE=SCORE+10
-                      FOUND=1
-                      ALIENS_COUNT=ALIENS_COUNT-1
-                      IF ALIENS_COUNT <= 0 THEN GAME_OVER = 1
-
-                    END IF
-                  END IF
-                NEXT A
-                
-                
+                REM O(1) alien index from grid: col=(BX-ALIEN_BASE)/2, row=BY/2
+                A=(BY/2)*10+(BX-ALIEN_BASE)/2
+                IF A>=0 AND A<=49 AND ALIENS(A).STATE=1 THEN
+                  ALIENS(A).STATE=0
+                  SCORE=SCORE+10
+                  ALIENS_COUNT=ALIENS_COUNT-1
+                  IF ALIENS_COUNT<=0 THEN GAME_OVER=1
+                END IF
               END IF
               BF=0 
       ELSE
