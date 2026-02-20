@@ -166,12 +166,11 @@ SUB MOVE_ALIENS()
         POKE SCREENADDRESS+(40*ROW)+ALIEN_LEFT,32
       NEXT ROW
     ELSE
-      REM Move left: dest<src, use MEMCPY (overlap-safe downwards)
-      REM Copy width-1 bytes (left+1..right-1 to left..right-2), we clear column right
+      REM Move left: copy whole block one column left (src=LEFT..RIGHT to dst=LEFT-1..RIGHT-1), then clear vacated right
       FOR ROW=ALIEN_TOP TO ALIEN_BOTTOM STEP 2
-        SRC=SCREENADDRESS+(40*ROW)+ALIEN_LEFT+1
-        DST=SCREENADDRESS+(40*ROW)+ALIEN_LEFT
-        MEMCPY SRC,DST,WIDTH-1
+        SRC=SCREENADDRESS+(40*ROW)+ALIEN_LEFT
+        DST=SCREENADDRESS+(40*ROW)+ALIEN_LEFT-1
+        MEMCPY SRC,DST,WIDTH
         POKE SCREENADDRESS+(40*ROW)+ALIEN_RIGHT,32
       NEXT ROW
     END IF
@@ -204,7 +203,7 @@ PRINT CHR$(147);
 
 ALIENS_COUNT=0
 FOR I=0 TO 49
-  ALIENS(I).X=(I MOD 10)
+  ALIENS(I).X=(I MOD 10)*2
   ALIENS(I).Y=(I / 10)*2
   ALIENS(I).STATE=1
   ALIENS(I).BULLETX=0
