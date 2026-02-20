@@ -11,12 +11,7 @@ CONST SCREENADDRESS = 32768
 REM low byte of system clock
 DIM LASTTICK AS BYTE
 
-REM Wait for next frame
-SUB WAITFRAME()
-    LASTTICK = PEEK(143)
-    DO
-    LOOP WHILE PEEK(143) = LASTTICK
-END SUB
+
 
 ' Reads 4032 PET Graphic 10-row keyboard matrix via:
 '   $E810 (59408) write row number 0..9
@@ -98,6 +93,7 @@ DIM C AS BYTE: C=32
 
 
 REM 5 ROWS OF 10 ALIENS
+DIM ALIENS AS BYTE: ALIENS=50
 DIM ALIENS(50) AS ALIEN
 DIM ALIEN_LEFT AS INT: ALIEN_LEFT=0
 DIM ALIEN_RIGHT AS INT: ALIEN_RIGHT=19
@@ -186,10 +182,9 @@ ALIEN_LEFT=0: ALIEN_RIGHT=19: ALIEN_BASE=0: ALIEN_DIRECTION=1
 
 REM SCREEN
 PRINT CHR$(147);CHR$(142)
-PRINT "petvaders"
+PRINT "{13}petvaders"
 PRINT "chris garrett 2026{13}retrogamecoders.com"
 PRINT "{13}{13}press a key to play"
-
 K$=""
 DO WHILE K$=""
   GET K$
@@ -215,12 +210,10 @@ POKE SCREENADDRESS+(40*Y)+X,65
 
   REM GAMEPLAY LOOP
   DO WHILE GAME_OVER <> 1 AND LIVES > 0
+ 
 
-    CALL WAITFRAME()
-    TEXTAT 0,24,"                                                 "
-    TEXTAT 0,24,"score: "+STR$(SCORE)
-    TEXTAT 10,24,"left:"+STR$(ALIEN_LEFT)
-    TEXTAT 20,24,"base:"+STR$(ALIEN_BASE)
+    TEXTAT 5,24,"                                                 "
+    TEXTAT 5,24,"{rvs on}score{rvs off}:"+STR$(SCORE)+" {rvs on}lives{rvs off}:"+STR$(LIVES)+" {rvs on}high score{rvs off}:"+STR$(HIGH_SCORE)
     
     REM PLAYER MOVEMENT 
     OLDX=X
@@ -254,7 +247,8 @@ POKE SCREENADDRESS+(40*Y)+X,65
       POKE SCREENADDRESS+(40*BY)+BX,32
     END IF
 
-    IF LASTTICK MOD 10 = 0 THEN CALL MOVE_ALIENS() 
+
+    IF PEEK(143) MOD 10 = 0 THEN CALL MOVE_ALIENS() 
 
       REM BULLET MOVEMENT
       IF BF=1 THEN
@@ -273,6 +267,8 @@ POKE SCREENADDRESS+(40*Y)+X,65
               IF C=13 OR C=23 THEN
                 POKE SCREENADDRESS+(40*BY)+BX,32 : BF=0
                 SCORE=SCORE+10
+                ALIENS=ALIENS-1
+                IF ALIENS = 0 THEN GAME_OVER = 1
                 REM Compute alien index from grid: column=(BX-ALIEN_BASE)/2, row=BY/2
                 A=(BY/2)*10+(BX-ALIEN_BASE)/2
                 IF A>=0 AND A<=49 THEN ALIENS(A).STATE=0
@@ -287,9 +283,23 @@ POKE SCREENADDRESS+(40*Y)+X,65
 
 REM GAME OVER SCREEN
 PRINT CHR$(147)
-PRINT "game over!"
-PRINT "score: ";SCORE
-PRINT "high score: ";HIGH_SCORE
+
+
+IF LIVES <=0 THEN 
+    PRINT "game over!"
+ELSE 
+    PRINT "you win!"
+END IF
+
+IF SCORE > HIGH_SCORE THEN 
+  HIGH_SCORE = SCORE
+  PRINT "new high score!"
+  PRINT "score: ";SCORE
+
+ELSE
+ PRINT "score: ";SCORE
+ PRINT "high score: ";HIGH_SCORE
+END IF
 PRINT "press a key to continue"
 K$=""
 DO WHILE K$=""
