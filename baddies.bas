@@ -147,12 +147,15 @@ SUB MOVE_ALIENS()
   REM Clear dead alien cells so MEMCPY doesn't copy them (bounds shrink but screen still has chars)
   FOR I=0 TO 49
     IF ALIENS(I).STATE=0 THEN
+      ALIENS_COUNT=ALIENS_COUNT-1
+      IF ALIENS_COUNT <= 0 THEN GAME_OVER = 1
+
       POKE SCREENADDRESS+(40*ALIENS(I).Y)+ALIEN_BASE+ALIENS(I).X,32
     END IF
   NEXT I
 
-  IF ALIEN_LEFT<=0 AND ALIEN_DIRECTION=-1 THEN ALIEN_DIRECTION=1
-  IF ALIEN_RIGHT>=39 AND ALIEN_DIRECTION=1 THEN ALIEN_DIRECTION=-1
+  IF ALIEN_LEFT<=4 AND ALIEN_DIRECTION=-1 THEN ALIEN_DIRECTION=1
+  IF ALIEN_RIGHT>=38 AND ALIEN_DIRECTION=1 THEN ALIEN_DIRECTION=-1
 
   REM Only move if we won't go out of bounds (use updated bounds so formation hits 0 and 39)
   REM IF (ALIEN_DIRECTION=1 AND ALIEN_RIGHT<39) OR (ALIEN_DIRECTION=-1 AND ALIEN_LEFT>0) THEN
@@ -226,14 +229,11 @@ POKE SCREENADDRESS+(40*Y)+X,65
     IF BF=1 THEN POKE SCREENADDRESS+(40*BY)+BX,32
     
     REM Only redraw status when score/lives/aliens change - TEXTAT+STR$ are slow
-    LIVE_CNT=0
-    FOR I=0 TO 49
-      IF ALIENS(I).STATE=1 THEN LIVE_CNT=LIVE_CNT+1
-    NEXT I
-    IF SCORE<>OLDSCORE OR LIVES<>OLDLIVES OR LIVE_CNT<>OLDALIENS THEN
+
+    IF SCORE<>OLDSCORE OR LIVES<>OLDLIVES THEN
       OLDSCORE=SCORE: OLDLIVES=LIVES: OLDALIENS=LIVE_CNT
       TEXTAT 0,24,"                                                 "
-      TEXTAT 0,24,"{rvs on}score{rvs off}:"+STR$(SCORE)+" {rvs on}lives{rvs off}:"+STR$(LIVES)+" {rvs on}high{rvs off}:"+STR$(HIGH_SCORE)+" aliens: "+STR$(LIVE_CNT)
+      TEXTAT 0,24,"{rvs on}score{rvs off}:"+STR$(SCORE)+" {rvs on}lives{rvs off}:"+STR$(LIVES)+" {rvs on}high{rvs off}:"+STR$(HIGH_SCORE)+" aliens: "+STR$(ALIENS_COUNT)
     
     END IF
     
@@ -294,8 +294,6 @@ POKE SCREENADDRESS+(40*Y)+X,65
                     IF AX=BX AND AY=BY THEN
                       ALIENS(A).STATE=0
                       SCORE=SCORE+10
-                      ALIENS_COUNT=ALIENS_COUNT-1
-                      IF ALIENS_COUNT <= 0 THEN GAME_OVER = 1
                       FOUND=1
                     END IF
                   END IF
