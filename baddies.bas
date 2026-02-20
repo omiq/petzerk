@@ -84,6 +84,8 @@ GAME_OVER = 0
 DIM SCORE AS INT: SCORE=0
 DIM HIGH_SCORE AS INT: HIGH_SCORE=0
 DIM OLDSCORE AS INT: DIM OLDLIVES AS INT
+DIM OLDALIENS AS INT: OLDALIENS=-1
+DIM LIVE_CNT AS INT
 
 REM C IS CHARACTER READ FROM THE SCREEN
 DIM C AS BYTE: C=32
@@ -182,7 +184,8 @@ DO WHILE 1
 
 REM RESET THE PLAYER AND GAME VARIABLES
 LIVES=3: GAME_OVER=0: SCORE=0: X=20: Y=20: BF=0: BX=0: BY=0
-OLDSCORE=-1: OLDLIVES=-1
+OLDSCORE=-1: OLDLIVES=-1: OLDALIENS=-1
+ALIENS_COUNT=50
 ALIEN_LEFT=0: ALIEN_RIGHT=19: ALIEN_BASE=0: ALIEN_DIRECTION=1
 
 REM SCREEN
@@ -215,30 +218,27 @@ POKE SCREENADDRESS+(40*Y)+X,65
 
   REM GAMEPLAY LOOP
   DO WHILE GAME_OVER <> 1 AND LIVES > 0
- 
+  
+    REM Erase bullet from alien rows before MEMCPY so it won't get copied (prevents trails)
+    IF BF=1 THEN POKE SCREENADDRESS+(40*BY)+BX,32
     
-    REM Only redraw status when score/lives change - TEXTAT+STR$ are slow
-    IF SCORE<>OLDSCORE OR LIVES<>OLDLIVES THEN
-      OLDSCORE=SCORE: OLDLIVES=LIVES
-      TEXTAT 5,24,"                                                 "
-      TEXTAT 5,24,"{rvs on}score{rvs off}:"+STR$(SCORE)+" {rvs on}lives{rvs off}:"+STR$(LIVES)+" {rvs on}high score{rvs off}:"+STR$(HIGH_SCORE)
+    REM Only redraw status when score/lives/aliens change - TEXTAT+STR$ are slow
+    LIVE_CNT=0
+    FOR I=0 TO 49
+      IF ALIENS(I).STATE=1 THEN LIVE_CNT=LIVE_CNT+1
+    NEXT I
+    IF SCORE<>OLDSCORE OR LIVES<>OLDLIVES OR LIVE_CNT<>OLDALIENS THEN
+      OLDSCORE=SCORE: OLDLIVES=LIVES: OLDALIENS=LIVE_CNT
+      TEXTAT 0,24,"                                                 "
+      TEXTAT 0,24,"{rvs on}score{rvs off}:"+STR$(SCORE)+" {rvs on}lives{rvs off}:"+STR$(LIVES)+" {rvs on}high score{rvs off}:"+STR$(HIGH_SCORE)+" aliens: "+STR$(LIVE_CNT)
+    
     END IF
     
     REM PLAYER MOVEMENT 
     OLDX=X
     OLDY=Y
     
-    'CALL READKEYBOARD()
-    'IF KEYPRESSED(Q_ROW, Q_COL) THEN GAME_OVER = 1
-    'IF KEYDOWN(D_ROW, D_COL) THEN X=X+1
-    'IF KEYDOWN(A_ROW, A_COL) THEN X=X-1
-    'IF KEYDOWN(W_ROW, W_COL) THEN Y=Y-1
-    'IF KEYDOWN(S_ROW, S_COL) THEN Y=Y+1
-    'IF KEYDOWN(SP_ROW, SP_COL) AND BF=0 THEN 
-    '  BX=X
-    '  BY=Y-1
-    '  BF=1
-    'END IF
+
     REM '
     GET K$
     IF K$="Q" OR K$="q" THEN GAME_OVER = 1
@@ -263,10 +263,6 @@ POKE SCREENADDRESS+(40*Y)+X,65
       POKE SCREENADDRESS+(40*Y)+X,65
     END IF
 
-    REM Erase bullet from alien rows before MEMCPY so it won't get copied (prevents trails)
-    IF BF=1 THEN
-      POKE SCREENADDRESS+(40*BY)+BX,32
-    END IF
 
 
     IF PEEK(143) MOD 10 = 0 THEN CALL MOVE_ALIENS() 
@@ -284,15 +280,17 @@ POKE SCREENADDRESS+(40*Y)+X,65
       REM PLAYER BULLET COLLISION CHECK
       C=PEEK(SCREENADDRESS+(40*BY)+BX)
       IF C<>32 THEN 
-              
+      	BF=0
+        POKE SCREENADDRESS+(40*BY)+BX,32
               IF C=13 OR C=23 THEN
-                POKE SCREENADDRESS+(40*BY)+BX,32 : BF=0
-                SCORE=SCORE+10
-                ALIENS_COUNT=ALIENS_COUNT-1
-                IF ALIENS_COUNT <= 0 THEN GAME_OVER = 1
                 REM Compute alien index from grid: column=(BX-ALIEN_BASE)/2, row=BY/2
                 A=(BY/2)*10+(BX-ALIEN_BASE)/2
-                IF A>=0 AND A<=49 THEN ALIENS(A).STATE=0
+                IF A>=0 AND A<=49 THEN
+                  ALIENS(A).STATE=0
+                  SCORE=SCORE+10
+                  ALIENS_COUNT=ALIENS_COUNT-1
+                  IF ALIENS_COUNT <= 0 THEN GAME_OVER = 1
+                END IF
               END IF
               BF=0 
       ELSE
