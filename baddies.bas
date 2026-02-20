@@ -114,6 +114,9 @@ REM ALIENS SWITCH BETWEEN M AND W ON EACH FRAME
 DIM ALIEN_CHAR AS BYTE: ALIEN_CHAR=13
 DIM FAST I AS BYTE
 DIM FAST A AS BYTE
+DIM FOUND AS BYTE
+DIM AX AS INT
+DIM AY AS INT
 DIM LEFTMOST_COL AS INT
 DIM RIGHTMOST_COL AS INT
 
@@ -246,7 +249,7 @@ POKE SCREENADDRESS+(40*Y)+X,65
     IF K$="A" OR K$="a" THEN X=X-1
     IF K$="W" OR K$="w" THEN Y=Y-1
     IF K$="S" OR K$="s" THEN Y=Y+1
-    IF K$=" " THEN 
+    IF K$=" " AND BF=0 THEN 
       BX=X
       BY=Y
       BF=1
@@ -269,33 +272,51 @@ POKE SCREENADDRESS+(40*Y)+X,65
 
       REM BULLET MOVEMENT
       IF BF=1 THEN
-
-
-        IF BY >= ALIEN_TOP THEN 
-              BY=BY-1
+        IF BY >= 0 THEN 
+          BY=BY-1
         ELSE 
-              BF=0
+          BF=0
         END IF
 
       REM PLAYER BULLET COLLISION CHECK
       C=PEEK(SCREENADDRESS+(40*BY)+BX)
       IF C<>32 THEN 
       	BF=0
+
         POKE SCREENADDRESS+(40*BY)+BX,32
               IF C=13 OR C=23 THEN
-                REM Compute alien index from grid: column=(BX-ALIEN_BASE)/2, row=BY/2
-                A=(BY/2)*10+(BX-ALIEN_BASE)/2
-                IF A>=0 AND A<=49 THEN
-                  ALIENS(A).STATE=0
-                  SCORE=SCORE+10
-                  ALIENS_COUNT=ALIENS_COUNT-1
-                  IF ALIENS_COUNT <= 0 THEN GAME_OVER = 1
+                REM Find alien at (BX,BY) by matching screen position
+                FOUND=0
+                FOR A=0 TO 49
+                  IF FOUND=0 AND ALIENS(A).STATE=1 THEN
+                    AX=ALIEN_BASE+ALIENS(A).X
+                    AY=ALIENS(A).Y
+                    IF AX=BX AND AY=BY THEN
+                      ALIENS(A).STATE=0
+                      SCORE=SCORE+10
+                      ALIENS_COUNT=ALIENS_COUNT-1
+                      IF ALIENS_COUNT <= 0 THEN GAME_OVER = 1
+                      FOUND=1
+                    END IF
+                  END IF
+                NEXT A
+                REM Fallback: if no position match, use grid formula (avoids ghost + wrong count)
+                IF FOUND=0 THEN
+                  A=(BY/2)*10+(BX-ALIEN_BASE)/2
+                  IF A>=0 AND A<=49 AND ALIENS(A).STATE=1 THEN
+                    ALIENS(A).STATE=0
+                    SCORE=SCORE+10
+                    ALIENS_COUNT=ALIENS_COUNT-1
+                    IF ALIENS_COUNT <= 0 THEN GAME_OVER = 1
+                  END IF
                 END IF
               END IF
               BF=0 
       ELSE
           POKE SCREENADDRESS+(40*BY)+BX,34
       END IF
+
+ 
 
     END IF
   LOOP
