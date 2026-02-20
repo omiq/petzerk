@@ -111,14 +111,36 @@ DIM FAST A AS BYTE
 DIM LEFTMOST_COL AS INT
 DIM RIGHTMOST_COL AS INT
 
+REM Recalc ALIEN_LEFT/RIGHT from living aliens - keeps formation hitting screen bounds 0 and 39
+SUB UPDATE_ALIEN_BOUNDS()
+  LEFTMOST_COL=10
+  RIGHTMOST_COL=-1
+  FOR I=0 TO 49
+    IF ALIENS(I).STATE=1 THEN
+      A=I MOD 10
+      IF A<LEFTMOST_COL THEN LEFTMOST_COL=A
+      IF A>RIGHTMOST_COL THEN RIGHTMOST_COL=A
+    END IF
+  NEXT I
+  IF RIGHTMOST_COL>=0 THEN
+    REM New bounds: leftmost alien at ALIEN_LEFT+col*2, rightmost at ALIEN_LEFT+col*2
+    A=ALIEN_LEFT+LEFTMOST_COL*2
+    ALIEN_RIGHT=ALIEN_LEFT+RIGHTMOST_COL*2
+    ALIEN_LEFT=A
+  END IF
+END SUB
+
 REM MOVE THE ACTIVE ALIENS WITHIN THE BOUNDS
 REM Uses MEMCPY/MEMSHIFT for fast block movement (MEMCPY=downwards overlap, MEMSHIFT=upwards)
 REM Only copies alien rows (0,2,4,6,8) to avoid shifting bullets in gap rows
 SUB MOVE_ALIENS()
+  REM Always recalc bounds from living aliens so formation hits screen edges 0 and 39
+  CALL UPDATE_ALIEN_BOUNDS()
+
   IF ALIEN_LEFT<=0 AND ALIEN_DIRECTION=-1 THEN ALIEN_DIRECTION=1
   IF ALIEN_RIGHT>=39 AND ALIEN_DIRECTION=1 THEN ALIEN_DIRECTION=-1
 
-  REM Only move if we won't go out of bounds
+  REM Only move if we won't go out of bounds (use updated bounds so formation hits 0 and 39)
   IF (ALIEN_DIRECTION=1 AND ALIEN_RIGHT<39) OR (ALIEN_DIRECTION=-1 AND ALIEN_LEFT>0) THEN
     WIDTH=ALIEN_RIGHT-ALIEN_LEFT+1
 
@@ -147,32 +169,12 @@ SUB MOVE_ALIENS()
   END IF
 END SUB
 
-REM Recalc ALIEN_LEFT/RIGHT from living aliens (call only when alien killed)
-SUB UPDATE_ALIEN_BOUNDS()
-  LEFTMOST_COL=10
-  RIGHTMOST_COL=-1
-  FOR I=0 TO 49
-    IF ALIENS(I).STATE=1 THEN
-      A=I MOD 10
-      IF A<LEFTMOST_COL THEN LEFTMOST_COL=A
-      IF A>RIGHTMOST_COL THEN RIGHTMOST_COL=A
-    END IF
-  NEXT I
-  IF RIGHTMOST_COL>=0 THEN
-    REM Use base before we update ALIEN_LEFT
-    A=ALIEN_LEFT+LEFTMOST_COL*2
-    ALIEN_RIGHT=ALIEN_LEFT+RIGHTMOST_COL*2
-    ALIEN_LEFT=A
-  END IF
-END SUB
-
-
-
 REM INFINITE LOOP FOR THE GAME OUTER LOOP 
 DO WHILE 1
 
 REM RESET THE PLAYER AND GAME VARIABLES
 LIVES=3: GAME_OVER=0: SCORE=0: X=20: Y=20: BF=0: BX=0: BY=0
+ALIEN_LEFT=0: ALIEN_RIGHT=19: ALIEN_DIRECTION=1
 
 REM SCREEN
 PRINT CHR$(147);CHR$(142)
@@ -260,10 +262,7 @@ POKE SCREENADDRESS+(40*Y)+X,65
                 SCORE=SCORE+10
                 REM Compute alien index from grid: column=(BX-ALIEN_LEFT)/2, row=BY/2
                 A=(BY/2)*10+(BX-ALIEN_LEFT)/2
-                IF A>=0 AND A<=49 THEN
-                  ALIENS(A).STATE=0
-                  CALL UPDATE_ALIEN_BOUNDS()
-                END IF
+                IF A>=0 AND A<=49 THEN ALIENS(A).STATE=0
               END IF
               BF=0 
       ELSE
