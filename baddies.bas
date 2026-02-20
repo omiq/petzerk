@@ -8,6 +8,55 @@ REM ========================================================
 REM SCREEN ADDRESS SO MORE PORTABLE
 CONST SCREENADDRESS = 32768
 
+' Reads 4032 PET Graphic 10-row keyboard matrix via:
+'   $E810 (59408) write row number 0..9
+'   $E812 (59410) read column bits (active low)
+' ------------------------------------------------------------
+
+CONST KEYROW  = 59408  ' $E810
+CONST KEYREAD = 59410  ' $E812
+
+DIM KEYS(10) AS BYTE
+DIM KEYSLAST(10) AS BYTE
+DIM KEYSPRESSED(10) AS BYTE
+
+DIM R AS BYTE
+DIM V AS BYTE
+
+SUB READKEYBOARD()
+    FOR R = 0 TO 9
+        POKE KEYROW, R
+        V = PEEK(KEYREAD) XOR 255        ' pressed bits become 1
+
+        KEYS(R) = V
+
+        ' edge detect: newly pressed = (changed) AND (current down)
+        KEYSPRESSED(R) = (V XOR KEYSLAST(R)) AND V
+        KEYSLAST(R) = V
+    NEXT R
+END SUB
+
+FUNCTION KEYDOWN AS BYTE (ROW AS BYTE, COL AS BYTE)
+    IF (KEYS(ROW) AND SHL(1, COL)) <> 0 THEN RETURN 1
+    RETURN 0
+END FUNCTION
+
+FUNCTION KEYPRESSED AS BYTE (ROW AS BYTE, COL AS BYTE)
+    IF (KEYSPRESSED(ROW) AND SHL(1, COL)) <> 0 THEN RETURN 1
+    RETURN 0
+END FUNCTION
+
+' ------------------------------------------------------------
+' Control mapping (from my TRSE PET "graphic" keyboard table)
+' ------------------------------------------------------------
+CONST W_ROW  = 3 : CONST W_COL  = 0
+CONST A_ROW  = 4 : CONST A_COL  = 0
+CONST S_ROW  = 5 : CONST S_COL  = 0
+CONST D_ROW  = 4 : CONST D_COL  = 1
+CONST Q_ROW  = 2 : CONST Q_COL  = 0
+CONST SP_ROW = 9 : CONST SP_COL = 2
+REM ' --------------------------------------------------------
+
 REM BADDIES:
 TYPE ALIEN
   X AS INT
@@ -59,6 +108,8 @@ REM ALIENS SWITCH BETWEEN M AND W ON EACH FRAME
 DIM ALIEN_CHAR AS BYTE: ALIEN_CHAR=13
 DIM FAST I AS BYTE
 DIM FAST A AS BYTE
+DIM LEFTMOST_COL AS INT
+DIM RIGHTMOST_COL AS INT
 
 REM MOVE THE ACTIVE ALIENS WITHIN THE BOUNDS
 REM Uses MEMCPY/MEMSHIFT for fast block movement (MEMCPY=downwards overlap, MEMSHIFT=upwards)
@@ -93,12 +144,25 @@ SUB MOVE_ALIENS()
     ALIEN_LEFT=ALIEN_LEFT+ALIEN_DIRECTION
     ALIEN_RIGHT=ALIEN_RIGHT+ALIEN_DIRECTION
 
-    REM Update alien struct X positions to stay in sync
-    FOR I=0 TO 49
-      IF ALIENS(I).STATE=1 THEN
-        ALIENS(I).X=ALIENS(I).X+ALIEN_DIRECTION
-      END IF
-    NEXT I
+  END IF
+END SUB
+
+REM Recalc ALIEN_LEFT/RIGHT from living aliens (call only when alien killed)
+SUB UPDATE_ALIEN_BOUNDS()
+  LEFTMOST_COL=10
+  RIGHTMOST_COL=-1
+  FOR I=0 TO 49
+    IF ALIENS(I).STATE=1 THEN
+      A=I MOD 10
+      IF A<LEFTMOST_COL THEN LEFTMOST_COL=A
+      IF A>RIGHTMOST_COL THEN RIGHTMOST_COL=A
+    END IF
+  NEXT I
+  IF RIGHTMOST_COL>=0 THEN
+    REM Use base before we update ALIEN_LEFT
+    A=ALIEN_LEFT+LEFTMOST_COL*2
+    ALIEN_RIGHT=ALIEN_LEFT+RIGHTMOST_COL*2
+    ALIEN_LEFT=A
   END IF
 END SUB
 
@@ -142,29 +206,18 @@ POKE SCREENADDRESS+(40*Y)+X,65
   REM GAMEPLAY LOOP
   DO WHILE GAME_OVER <> 1 AND LIVES > 0
 
-    REM Erase bullet from alien rows before MEMCPY so it won't get copied (prevents trails)
-    IF BF=1 AND (BY=0 OR BY=2 OR BY=4 OR BY=6 OR BY=8) THEN
-      POKE SCREENADDRESS+(40*BY)+BX,32
-    END IF
-    CALL MOVE_ALIENS()
-    REM TO DO
-    REM ALIEN MOVEMENT USING BOUNDS CHECKS
-    REM LOOP THROUGH ALL ALIENS THAT ARE ACTIVE
-    REM AND MOVE THEM RIGHT OR LEFT, AT EDGES REVERSE AND MOVE DOWN A ROW
-    REM BOTTOM ROW CAN RANDOMLY FIRE A BULLET DOWNWARDS
-    REM ALREADY ACTIVE BULLETS NEED TO MOVE AND CHECK FOR BOUNDS AND PLAYER KILL
 
     REM PLAYER MOVEMENT 
     OLDX=X
     OLDY=Y
     
-    GET K$
-    IF K$="Q" OR K$="q" THEN GAME_OVER = 1
-    IF K$="D" OR K$="d" THEN X=X+1
-    IF K$="A" OR K$="a" THEN X=X-1
-    IF K$="W" OR K$="w" THEN Y=Y-1
-    IF K$="S" OR K$="s" THEN Y=Y+1
-    IF K$=" " AND BF=0 THEN 
+    CALL READKEYBOARD()
+    IF KEYPRESSED(Q_ROW, Q_COL) THEN GAME_OVER = 1
+    IF KEYDOWN(D_ROW, D_COL) THEN X=X+1
+    IF KEYDOWN(A_ROW, A_COL) THEN X=X-1
+    IF KEYDOWN(W_ROW, W_COL) THEN Y=Y-1
+    IF KEYDOWN(S_ROW, S_COL) THEN Y=Y+1
+    IF KEYPRESSED(SP_ROW, SP_COL) AND BF=0 THEN 
       BX=X
       BY=Y-1
       BF=1
@@ -181,32 +234,36 @@ POKE SCREENADDRESS+(40*Y)+X,65
       POKE SCREENADDRESS+(40*Y)+X,65
     END IF
 
+    REM Erase bullet from alien rows before MEMCPY so it won't get copied (prevents trails)
+    IF BF=1 THEN
+      POKE SCREENADDRESS+(40*BY)+BX,32
+    END IF
+
+    CALL MOVE_ALIENS() 
+
       REM BULLET MOVEMENT
       IF BF=1 THEN
-        POKE SCREENADDRESS+(40*BY)+BX,32
 
-            IF BY >= 0 THEN 
+
+        IF BY >= 0 THEN 
               BY=BY-1
         ELSE 
               BF=0
-            END IF
+        END IF
 
       REM PLAYER BULLET COLLISION CHECK
       C=PEEK(SCREENADDRESS+(40*BY)+BX)
       IF C<>32 THEN 
-
-              POKE SCREENADDRESS+(40*BY)+BX,32
-              IF C=13 OR C=23 THEN 
+              
+              IF C=13 OR C=23 THEN
+                POKE SCREENADDRESS+(40*BY)+BX,32 : BF=0
                 SCORE=SCORE+10
-                REM WHICH ALIEN WAS HIT?  
-                FOR A=0 TO 49
-                  IF ALIENS(A).STATE=1 THEN
-                    IF ALIENS(A).X=BX AND ALIENS(A).Y=BY THEN
-                      ALIENS(A).STATE=0
-                      EXIT FOR  : REM BREAK OUT OF THE LOOP
-                    END IF
-                  END IF
-                NEXT A           
+                REM Compute alien index from grid: column=(BX-ALIEN_LEFT)/2, row=BY/2
+                A=(BY/2)*10+(BX-ALIEN_LEFT)/2
+                IF A>=0 AND A<=49 THEN
+                  ALIENS(A).STATE=0
+                  CALL UPDATE_ALIEN_BOUNDS()
+                END IF
               END IF
               BF=0 
       ELSE
