@@ -137,6 +137,25 @@ SUB UPDATE_ALIEN_BOUNDS()
   END IF
 END SUB
 
+REM Drop formation one line (when reversing); uses WIDTH, ALIEN_LEFT, ALIEN_RIGHT, ALIEN_TOP, ALIEN_BOTTOM
+SUB DROP_ALIENS()
+  IF ALIEN_BOTTOM+1>=24 THEN RETURN
+  REM Copy each alien row down by 1, bottom to top so we don't overwrite
+  FOR ROW=ALIEN_BOTTOM TO ALIEN_TOP STEP -2
+    SRC=SCREENADDRESS+(40*ROW)+ALIEN_LEFT
+    DST=SCREENADDRESS+(40*(ROW+1))+ALIEN_LEFT
+    MEMCPY SRC,DST,WIDTH
+    FOR AL=0 TO WIDTH-1
+      POKE SCREENADDRESS+(40*ROW)+ALIEN_LEFT+AL,32
+    NEXT AL
+  NEXT ROW
+  ALIEN_TOP=ALIEN_TOP+1
+  ALIEN_BOTTOM=ALIEN_BOTTOM+1
+  FOR I=0 TO 49
+    ALIENS(I).Y=ALIENS(I).Y+1
+  NEXT I
+END SUB
+
 REM MOVE THE ACTIVE ALIENS WITHIN THE BOUNDS
 REM Uses MEMCPY/MEMSHIFT for fast block movement (MEMCPY=downwards overlap, MEMSHIFT=upwards)
 REM Only copies alien rows (0,2,4,6,8) to avoid shifting bullets in gap rows
@@ -144,15 +163,18 @@ SUB MOVE_ALIENS()
   REM Always recalc bounds from living aliens so formation hits screen edges 0 and 39
   CALL UPDATE_ALIEN_BOUNDS()
 
-  REM Clear dead alien cells so MEMCPY doesn't copy them (bounds shrink but screen still has chars)
-
-
-  IF ALIEN_LEFT<=1 AND ALIEN_DIRECTION=-1 THEN ALIEN_DIRECTION=1
-  IF ALIEN_RIGHT>=38 AND ALIEN_DIRECTION=1 THEN ALIEN_DIRECTION=-1
+  WIDTH=ALIEN_RIGHT-ALIEN_LEFT+1
+  IF ALIEN_LEFT<=1 AND ALIEN_DIRECTION=-1 THEN
+    CALL DROP_ALIENS()
+    ALIEN_DIRECTION=1
+  END IF
+  IF ALIEN_RIGHT>=38 AND ALIEN_DIRECTION=1 THEN
+    CALL DROP_ALIENS()
+    ALIEN_DIRECTION=-1
+  END IF
 
   REM Only move if we won't go out of bounds (use updated bounds so formation hits 0 and 39)
   REM IF (ALIEN_DIRECTION=1 AND ALIEN_RIGHT<39) OR (ALIEN_DIRECTION=-1 AND ALIEN_LEFT>0) THEN
-    WIDTH=ALIEN_RIGHT-ALIEN_LEFT+1
 
     IF ALIEN_DIRECTION=1 THEN
       REM Move right: dest>src, use MEMSHIFT (overlap-safe upwards)
@@ -261,8 +283,8 @@ TEXTAT 0,24,"score:"+STR$(SCORE)+" lives:"+STR$(LIVES)+" high:"+STR$(HIGH_SCORE)
     END IF
     IF K$="D" OR K$="d" THEN X=X+1
     IF K$="A" OR K$="a" THEN X=X-1
-    IF K$="W" OR K$="w" THEN Y=Y-1
-    IF K$="S" OR K$="s" THEN Y=Y+1
+    REM IF K$="W" OR K$="w" THEN Y=Y-1
+    REM IF K$="S" OR K$="s" THEN Y=Y+1
     IF K$=" " AND BF=0 THEN 
       BX=X
       BY=Y
