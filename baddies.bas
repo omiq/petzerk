@@ -240,21 +240,13 @@ TEXTAT 32,18,CHR$(140)+CHR$(32)+CHR$(140)
 
 
 POKE SCREENADDRESS+(40*Y)+X,65
-
+TEXTAT 0,24,"score:"+STR$(SCORE)+" lives:"+STR$(LIVES)+" high:"+STR$(HIGH_SCORE)+" aliens:"+STR$(ALIENS_COUNT)
+    
   REM GAMEPLAY LOOP
   DO WHILE GAME_OVER <> 1 AND LIVES > 0
   
     REM Erase bullet from alien rows before MEMCPY so it won't get copied (prevents trails)
     IF BF=1 THEN POKE SCREENADDRESS+(40*BY)+BX,32
-    
-    REM Only redraw status when score/lives/aliens change - TEXTAT+STR$ are slow
-
-    IF SCORE<>OLDSCORE OR LIVES<>OLDLIVES THEN
-      OLDSCORE=SCORE: OLDLIVES=LIVES: OLDALIENS=LIVE_CNT
-      TEXTAT 0,24,"                                                 "
-      TEXTAT 0,24,"score:"+STR$(SCORE)+" lives:"+STR$(LIVES)+" high:"+STR$(HIGH_SCORE)+" aliens:"+STR$(ALIENS_COUNT)
-    
-    END IF
     
     REM PLAYER MOVEMENT 
     OLDX=X
@@ -313,7 +305,11 @@ POKE SCREENADDRESS+(40*Y)+X,65
                   ALIENS(A).STATE=0
                   SCORE=SCORE+10
                   ALIENS_COUNT=ALIENS_COUNT-1
-                  IF ALIENS_COUNT<=0 THEN GAME_OVER=1
+                  IF ALIENS_COUNT<=0 THEN 
+                    GAME_OVER=1
+                  ELSE
+                    TEXTAT 0,24,"score:"+STR$(SCORE)+" lives:"+STR$(LIVES)+" high:"+STR$(HIGH_SCORE)+" aliens:"+STR$(ALIENS_COUNT)
+                  END IF
                 END IF
               END IF
               BF=0 
