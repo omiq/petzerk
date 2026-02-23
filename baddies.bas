@@ -224,22 +224,20 @@ END SUB
 REM BULLET MOVEMENT
 SUB PLAYER_SHOT()
 
-
-    REM ERASE PREVIOUS BULLET
-    POKE SCREENADDRESS+(40*BY)+BX,32
-
     IF BY >= 0 THEN 
-	BY=BY-1
-    
+       BY=BY-1
+       POKE SCREENADDRESS+(40*BY)+BX,34
+       
         FOR THIS_ALIEN AS INT = BOTTOM_ALIEN TO TOP_ALIEN STEP-1
 
-          IF ALIENS(THIS_ALIEN).STATE=1 AND BY=ALIENS(THIS_ALIEN).Y AND BX=ALIENS(THIS_ALIEN).X THEN
+          IF BY <= ALIEN_BOTTOM AND ALIENS(THIS_ALIEN).STATE=1 AND BY=ALIENS(THIS_ALIEN).Y AND BX=ALIENS(THIS_ALIEN).X THEN
             ALIENS(THIS_ALIEN).STATE=0
             SCORE=SCORE+10
             ALIENS_COUNT=ALIENS_COUNT-1 
             BF=0
             
-            POKE @ALIEN_ROW(5-(ALIEN_BOTTOM-ALIENS(THIS_ALIEN).Y)) + ALIENS(THIS_ALIEN).X-ALIEN_LEFT+1, 32
+            REM Row index: rows 2 apart so divide by 2. Char offset: first alien at X=ALIEN_LEFT is string pos 1 (0-based), so +1
+            POKE @ALIEN_ROW(5-(ALIEN_BOTTOM-ALIENS(THIS_ALIEN).Y)/2) + (ALIENS(THIS_ALIEN).X-ALIEN_LEFT)+1, 32
           
             IF ALIENS_COUNT<=0 THEN 
               GAME_OVER=1
@@ -250,7 +248,7 @@ SUB PLAYER_SHOT()
           END IF         
          NEXT THIS_ALIEN
 
-      POKE SCREENADDRESS+(40*BY)+BX,34
+      
     ELSE 
     	BF=0
     END IF
@@ -289,7 +287,7 @@ TEXTAT 0,22,"score:"+STR$(SCORE)+" lives:"+STR$(LIVES)+" high:"+STR$(HIGH_SCORE)
   REM GAMEPLAY LOOP
   DO WHILE GAME_OVER <> 1 AND LIVES > 0
   
-    REM Erase bullet from alien rows before MEMCPY so it won't get copied (prevents trails)
+    REM Erase bullet 
     IF BF=1 THEN POKE SCREENADDRESS+(40*BY)+BX,32
     
     REM PLAYER MOVEMENT 
@@ -323,8 +321,8 @@ TEXTAT 0,22,"score:"+STR$(SCORE)+" lives:"+STR$(LIVES)+" high:"+STR$(HIGH_SCORE)
     END IF
 
     IF PEEK(143) MOD 20 = 0 THEN CALL MOVE_ALIENS() 
-
     IF BF=1 THEN CALL PLAYER_SHOT()
+
 
   LOOP
 
