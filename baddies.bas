@@ -97,10 +97,10 @@ END SUB
 SUB INIT_ALIENS()
 
   ALIENS_COUNT=0
-  FOR Y=0 TO 4
-    FOR X=1 TO 10
-      ALIENS(ALIENS_COUNT).X=(X*2)+12
-      ALIENS(ALIENS_COUNT).Y=Y*2
+  FOR Y=ALIEN_TOP TO ALIEN_BOTTOM-1 STEP 2
+    FOR X=ALIEN_LEFT TO ALIEN_RIGHT-1 STEP 2
+      ALIENS(ALIENS_COUNT).X=X
+      ALIENS(ALIENS_COUNT).Y=Y
       ALIENS(ALIENS_COUNT).STATE=1
       ALIENS(ALIENS_COUNT).BULLETX=0
       ALIENS(ALIENS_COUNT).BULLETY=0
@@ -111,15 +111,6 @@ SUB INIT_ALIENS()
 END SUB
 
 SUB INITIAL_DRAW()
-
-  REM ALIENS INITIAL DRAW
-
-  TEXTAT ALIEN_LEFT,ALIEN_TOP,"  m w m w m w m w m w  "
-  TEXTAT ALIEN_LEFT,ALIEN_TOP+2,"  m w m w m w m w m w  "
-  TEXTAT ALIEN_LEFT,ALIEN_TOP+4,"  m w m w m w m w m w  "
-  TEXTAT ALIEN_LEFT,ALIEN_TOP+6,"  m w m w m w m w m w  "
-  TEXTAT ALIEN_LEFT,ALIEN_TOP+8,"  m w m w m w m w m w  "
-
 
   REM BASES
 
@@ -209,6 +200,46 @@ SUB MOVE_ALIENS()
 
 END SUB
 
+
+REM BULLET MOVEMENT
+SUB PLAYER_SHOT()
+
+
+    REM ERASE PREVIOUS BULLET
+    POKE SCREENADDRESS+(40*BY)+BX,32
+            TEXTAT 0,0, "                             "
+
+    IF BY >= 0 THEN 
+	BY=BY-1
+    
+        FOR THIS_ALIEN AS INT = 49 TO 0 STEP-1
+
+        TEXTAT 0,0, " b:" + STR$(BX) + " " + STR$(BY) + " a:" +STR$(THIS_ALIEN) + " xy:"+STR$(ALIENS(THIS_ALIEN).X)  + " " +  STR$(ALIENS(THIS_ALIEN).Y)
+
+          IF BY=ALIENS(THIS_ALIEN).Y AND BX=ALIENS(THIS_ALIEN).X THEN
+            ALIENS(THIS_ALIEN).STATE=0
+            SCORE=SCORE+10
+            ALIENS_COUNT=ALIENS_COUNT-1 
+            BF=0
+
+            IF ALIENS_COUNT<=0 THEN 
+              GAME_OVER=1
+            ELSE
+              TEXTAT 0,23,"score:"+STR$(SCORE)+" lives:"+STR$(LIVES)+" high:"+STR$(HIGH_SCORE)+" aliens:"+STR$(ALIENS_COUNT)
+            END IF
+
+          END IF         
+         NEXT THIS_ALIEN
+
+      POKE SCREENADDRESS+(40*BY)+BX,34
+    ELSE 
+    	BF=0
+    END IF
+
+
+END SUB
+
+
 REM INFINITE LOOP FOR THE GAME OUTER LOOP 
 DO WHILE 1
 
@@ -227,8 +258,8 @@ PRINT CHR$(147);
 REM RESET THE PLAYER AND GAME VARIABLES
 LIVES=3: GAME_OVER=0: SCORE=0: BF=0: BX=0: BY=0
 OLDSCORE=-1: OLDLIVES=-1: OLDALIENS=-1
-ALIEN_DIRECTION=1: ALIEN_LEFT=14: ALIEN_RIGHT=24
-ALIEN_TOP=0: ALIEN_BOTTOM=9
+ALIEN_DIRECTION=1: ALIEN_LEFT=12: ALIEN_RIGHT=ALIEN_LEFT+20
+ALIEN_TOP=1: ALIEN_BOTTOM=10
 TOP_ALIEN=0: BOTTOM_ALIEN=49
 
 CALL INIT_ALIENS()
@@ -260,7 +291,7 @@ TEXTAT 0,24,"score:"+STR$(SCORE)+" lives:"+STR$(LIVES)+" high:"+STR$(HIGH_SCORE)
     IF K$="A" OR K$="a" THEN X=X-1
     IF K$=" " AND BF=0 THEN 
       BX=X
-      BY=Y
+      BY=Y-1
       BF=1
     END IF
     
@@ -275,46 +306,10 @@ TEXTAT 0,24,"score:"+STR$(SCORE)+" lives:"+STR$(LIVES)+" high:"+STR$(HIGH_SCORE)
       POKE SCREENADDRESS+(40*Y)+X,65
     END IF
 
-
-
     IF PEEK(143) MOD 20 = 0 THEN CALL MOVE_ALIENS() 
 
-      REM BULLET MOVEMENT
-      IF BF=1 THEN
-        IF BY >= 0 THEN 
-          BY=BY-1
-        ELSE 
-          BF=0
-        END IF
+    IF BF=1 THEN CALL PLAYER_SHOT()
 
-      REM PLAYER BULLET COLLISION CHECK
-      C=PEEK(SCREENADDRESS+(40*BY)+BX)
-      IF C<>32 THEN 
-      	BF=0
-
-        POKE SCREENADDRESS+(40*BY)+BX,32
-              IF C=13 OR C=23 THEN
-                REM O(1) alien index from grid: col=(BX-ALIEN_BASE)/2, row=BY/2
-                A=(BY/2)*10+(BX-ALIEN_RIGHT)/2
-                IF A>=0 AND A<=49 AND ALIENS(A).STATE=1 THEN
-                  ALIENS(A).STATE=0
-                  SCORE=SCORE+10
-                  ALIENS_COUNT=ALIENS_COUNT-1
-                  IF ALIENS_COUNT<=0 THEN 
-                    GAME_OVER=1
-                  ELSE
-                    TEXTAT 0,24,"score:"+STR$(SCORE)+" lives:"+STR$(LIVES)+" high:"+STR$(HIGH_SCORE)+" aliens:"+STR$(ALIENS_COUNT)
-                  END IF
-                END IF
-              END IF
-              BF=0 
-      ELSE
-          POKE SCREENADDRESS+(40*BY)+BX,34
-      END IF
-
- 
-
-    END IF
   LOOP
 
 REM GAME OVER SCREEN
