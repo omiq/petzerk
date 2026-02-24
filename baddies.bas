@@ -83,8 +83,8 @@ STR_LINE$ = "                                        "
 
 SUB HUD()
 
-  REM TEXTAT 0,22,"score:"+STR$(SCORE)+" lives:"+STR$(LIVES)+" high:"+STR$(HIGH_SCORE)+" aliens:"+STR$(ALIENS_COUNT)
-  TEXTAT 0,0," bottom:"+STR$(ALIEN_BOTTOM)+" top:"+STR$(ALIEN_TOP)+" l:"+STR$(ALIEN_LEFT)+" r:"+STR$(ALIEN_RIGHT) + "    "
+  TEXTAT 0,22,"score:"+STR$(SCORE)+" lives:"+STR$(LIVES)+" high:"+STR$(HIGH_SCORE)+" aliens:"+STR$(ALIENS_COUNT)
+  REM TEXTAT 0,0," bottom:"+STR$(ALIEN_BOTTOM)+" top:"+STR$(ALIEN_TOP)+" l:"+STR$(ALIEN_LEFT)+" r:"+STR$(ALIEN_RIGHT) + "    "
   
 
 END SUB
@@ -241,36 +241,15 @@ END SUB
 SUB ALIEN_KILL()
 
          
-         PRINT "{home}{down}"
-         PRINT "alien left: " + STR$(ALIEN_LEFT) + "    "
-        PRINT "alien top: " + STR$(ALIEN_TOP) + "    "
-                PRINT "alien right: "+STR$(ALIEN_RIGHT) + "    "
-                        PRINT "alien bottom: " + STR$(ALIEN_BOTTOM) + "    "
                         
-                        PRINT "bx: " + STR$(BX) + "    "
-                        PRINT "by: " + STR$(BY) + "    "
-                        
-                        PRINT "char: " + STR$(C) + "    "
- 
-                        PRINT "bx-left: " + STR$(BX-ALIEN_LEFT) + "    "
-                        PRINT "by-top: " + STR$(BY-ALIEN_TOP) + "    "
  TEXTAT ALIEN_RIGHT,ALIEN_BOTTOM,"x"
  TEXTAT ALIEN_LEFT,ALIEN_TOP,"x"
- 
-                        CALL WAIT_KEY()
-         
 
-           POKE @ALIEN_ROW(5-(ALIEN_BOTTOM-ALIENS(THIS_ALIEN).Y)/2) + (ALIENS(THIS_ALIEN).X-ALIEN_LEFT)+1, 32
-
-
+ POKE @ALIEN_ROW(((BY-ALIEN_TOP)/2)+1) + BX-ALIEN_LEFT+2, 0
            POKE SCREENADDRESS+(40*BY)+BX,42
-           REM BF=0
 
            SCORE=SCORE+10
            ALIENS_COUNT=ALIENS_COUNT-1
-
-           REM UPDATE HUD
-           CALL HUD()
            
            IF ALIENS_COUNT<=0 THEN GAME_OVER=1
     
@@ -294,6 +273,7 @@ SUB PLAYER_SHOT()
         IF C=32 THEN 
             POKE SCREENADDRESS+(40*BY)+BX,34
         ELSE
+            BF=0
             CALL ALIEN_KILL()
         END IF
 
@@ -340,7 +320,7 @@ SUB INIT_GAME()
 
   REM RESET THE PLAYER AND GAME VARIABLES
   LIVES=3: GAME_OVER=0: SCORE=0: BF=0: BX=0: BY=0
-  ALIEN_DIRECTION=1: ALIEN_LEFT=12: ALIEN_RIGHT=ALIEN_LEFT+20
+  ALIEN_DIRECTION=1: ALIEN_LEFT=12: ALIEN_RIGHT=ALIEN_LEFT+18
   ALIEN_TOP=1: ALIEN_BOTTOM=9: FIRST_ALIEN=0: LAST_ALIEN=49
 
   CALL INIT_ALIENS()
