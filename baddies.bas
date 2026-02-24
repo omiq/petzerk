@@ -257,6 +257,9 @@ SUB PLAYER_SHOT()
            SCORE=SCORE+10
            ALIENS_COUNT=ALIENS_COUNT-1
            BF=0
+           REM UPDATE HUD
+           TEXTAT 0,22,"score:"+STR$(SCORE)+" lives:"+STR$(LIVES)+" high:"+STR$(HIGH_SCORE)+" aliens:"+STR$(ALIENS_COUNT)
+  
            POKE @ALIEN_ROW(5-(ALIEN_BOTTOM-ALIENS(THIS_ALIEN).Y)/2) + (ALIENS(THIS_ALIEN).X-ALIEN_LEFT)+1, 32
            IF ALIENS_COUNT<=0 THEN GAME_OVER=1
            EXIT FOR
