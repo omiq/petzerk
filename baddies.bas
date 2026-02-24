@@ -241,15 +241,7 @@ SUB MOVE_ALIENS()
 
 END SUB
 
-
-REM BULLET MOVEMENT
-SUB PLAYER_SHOT()
-
-    POKE SCREENADDRESS+(40*BY)+BX,32
-    IF BY >= ALIEN_TOP-1 THEN
-
-       BY=BY-1
-       POKE SCREENADDRESS+(40*BY)+BX,34
+SUB ALIEN_KILL()
 
        FOR THIS_ALIEN=BOTTOM_ALIEN TO TOP_ALIEN STEP -1
          IF ALIENS(THIS_ALIEN).STATE=1 AND BY=ALIENS(THIS_ALIEN).Y AND BX=ALIENS(THIS_ALIEN).X THEN
@@ -266,9 +258,27 @@ SUB PLAYER_SHOT()
          END IF
        NEXT THIS_ALIEN
 
-    ELSE
-      BF=0
+END SUB
+
+REM BULLET MOVEMENT
+SUB PLAYER_SHOT()
+
+    POKE SCREENADDRESS+(40*BY)+BX,32
+    IF BY < ALIEN_TOP THEN 
+    	BF=0
+        RETURN 
     END IF
+
+    BY=BY-1
+    C=PEEK(SCREENADDRESS+(40*BY)+BX)
+    IF C<>32 THEN 
+    	CALL ALIEN_KILL()
+    ELSE
+    	POKE SCREENADDRESS+(40*BY)+BX,34
+    END IF
+	
+
+
 
 END SUB
 
@@ -348,28 +358,30 @@ CALL INIT_GAME()
     
 
     REM '
-    GET K$
-    IF K$="Q" OR K$="q" THEN
-      LIVES=0 
-      GAME_OVER = 1
-    END IF
-    IF K$="D" OR K$="d" THEN X=X+1
-    IF K$="A" OR K$="a" THEN X=X-1
-    IF K$=" " AND BF=0 THEN 
-      BX=X
-      BY=Y-1
-      BF=1
-    END IF
-    
-    IF PEEK(SCREENADDRESS+(40*Y)+X)<>32 OR X<0 OR X>39 THEN
-      X=OLDX
-      Y=OLDY
-    END IF
+    IF PEEK(158)>0 THEN 
+    	GET K$
+      IF K$="Q" OR K$="q" THEN
+        LIVES=0 
+        GAME_OVER = 1
+      END IF
+      IF K$="D" OR K$="d" THEN X=X+1
+      IF K$="A" OR K$="a" THEN X=X-1
+      IF K$=" " AND BF=0 THEN 
+        BX=X
+        BY=Y-1
+        BF=1
+      END IF
 
-          
-    IF OLDX<>X OR OLDY<>Y THEN 
-      POKE SCREENADDRESS+(40*OLDY)+OLDX,32
-      POKE SCREENADDRESS+(40*Y)+X,65
+      IF PEEK(SCREENADDRESS+(40*Y)+X)<>32 OR X<0 OR X>39 THEN
+        X=OLDX
+        Y=OLDY
+      END IF
+
+
+      IF OLDX<>X OR OLDY<>Y THEN 
+        POKE SCREENADDRESS+(40*OLDY)+OLDX,32
+        POKE SCREENADDRESS+(40*Y)+X,65
+      END IF
     END IF
 
     IF PEEK(143) MOD 20 = 0 THEN CALL MOVE_ALIENS() 
