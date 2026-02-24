@@ -214,8 +214,6 @@ END SUB
 
 SUB MOVE_ALIENS()
 
-  CALL UPDATE_BOUNDS()
-
   IF ALIEN_LEFT<=2 AND ALIEN_DIRECTION=-1 THEN 
    ALIEN_DIRECTION=1
 
@@ -240,7 +238,7 @@ SUB MOVE_ALIENS()
 
 
   CALL DRAW_ALIENS()
-  CALL HUD()
+  
 
 
 END SUB
@@ -248,54 +246,58 @@ END SUB
 SUB ALIEN_KILL()
 
     
-
-       FOR THIS_ALIEN=LAST_ALIEN TO FIRST_ALIEN STEP -1
-       
-         IF BY=ALIENS(THIS_ALIEN).Y AND BX=ALIENS(THIS_ALIEN).X THEN
          
-                 POKE SCREENADDRESS+(40*BY)+BX,42
-        	BF=0
 
-           PRINT STR$(THIS_ALIEN) + ": "+ STR$(ALIENS(THIS_ALIEN).STATE)+" "+STR$(BX) + "=" + STR$(ALIENS(THIS_ALIEN).X) + " " + STR$(BY)  + "=" + STR$(ALIENS(THIS_ALIEN).Y)
+         
+         PRINT "{home}{down}"
+         PRINT "alien left: " + STR$(ALIEN_LEFT) + "    "
+        PRINT "alien top: " + STR$(ALIEN_TOP) + "    "
+                PRINT "alien right: "+STR$(ALIEN_RIGHT) + "    "
+                        PRINT "alien bottom: " + STR$(ALIEN_BOTTOM) + "    "
+                        
+                        PRINT "bx: " + STR$(BX) + "    "
+                        PRINT "by: " + STR$(BY) + "    "
+                        
+                        PRINT "char: " + STR$(C) + "    "
+ 
+                        CALL WAIT_KEY()
+         
+
+           POKE @ALIEN_ROW(5-(ALIEN_BOTTOM-ALIENS(THIS_ALIEN).Y)/2) + (ALIENS(THIS_ALIEN).X-ALIEN_LEFT)+1, 32
 
 
-           ALIENS(THIS_ALIEN).STATE=0
+           POKE SCREENADDRESS+(40*BY)+BX,42
+           REM BF=0
+
            SCORE=SCORE+10
            ALIENS_COUNT=ALIENS_COUNT-1
 
            REM UPDATE HUD
            CALL HUD()
            
-           POKE @ALIEN_ROW(5-(ALIEN_BOTTOM-ALIENS(THIS_ALIEN).Y)/2) + (ALIENS(THIS_ALIEN).X-ALIEN_LEFT)+1, 32
            IF ALIENS_COUNT<=0 THEN GAME_OVER=1
     
-         
-         
-         END IF
-       NEXT THIS_ALIEN
+
+
 
 END SUB
 
 REM BULLET MOVEMENT
 SUB PLAYER_SHOT()
-
-    POKE SCREENADDRESS+(40*BY)+BX,32
-    
-    IF BY < ALIEN_TOP THEN 
+  
+    IF BY < ALIEN_TOP THEN
+    	POKE SCREENADDRESS+(40*BY)+BX,32
     	BF=0
         RETURN 
     ELSE
+        POKE SCREENADDRESS+(40*BY)+BX,32
         BY=BY-1
-
         C=PEEK(SCREENADDRESS+(40*BY)+BX)
 
         IF C=32 THEN 
             POKE SCREENADDRESS+(40*BY)+BX,34
-            TEXTAT 0,0,"                   "
-            RETURN
         ELSE
             CALL ALIEN_KILL()
-            RETURN
         END IF
 
     END IF
@@ -342,14 +344,14 @@ SUB INIT_GAME()
   REM RESET THE PLAYER AND GAME VARIABLES
   LIVES=3: GAME_OVER=0: SCORE=0: BF=0: BX=0: BY=0
   ALIEN_DIRECTION=1: ALIEN_LEFT=12: ALIEN_RIGHT=ALIEN_LEFT+20
-  ALIEN_TOP=1: ALIEN_BOTTOM=10: FIRST_ALIEN=0: LAST_ALIEN=49
+  ALIEN_TOP=1: ALIEN_BOTTOM=9: FIRST_ALIEN=0: LAST_ALIEN=49
 
   CALL INIT_ALIENS()
   CALL INITIAL_DRAW()
   
   
   REM PLAYER START POSITIONS
-  X=20: Y=23
+  X=20: Y=24
   POKE SCREENADDRESS+(40*Y)+X,65
    
 
