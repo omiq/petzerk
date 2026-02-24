@@ -271,19 +271,30 @@ REM BULLET MOVEMENT
 SUB PLAYER_SHOT()
 
     POKE SCREENADDRESS+(40*BY)+BX,32
+
+    
     IF BY < ALIEN_TOP THEN 
     	BF=0
         RETURN 
+    ELSE
+        BY=BY-1
     END IF
 
-    BY=BY-1
     C=PEEK(SCREENADDRESS+(40*BY)+BX)
     IF C=32 THEN 
-    	POKE SCREENADDRESS+(40*BY)+BX,34
-    	
+        POKE SCREENADDRESS+(40*BY)+BX,34
+        TEXTAT 0,0,STR$(C) + "        "
+        RETURN
     ELSE
+        POKE SCREENADDRESS+(40*BY)+BX,0
         CALL ALIEN_KILL()
+        TEXTAT 0,0," *"+STR$(C)+"* !"
+        RETURN
     END IF
+    
+    TEXTAT 0,0," x"+STR$(C)+"x   "
+    CALL WAIT_KEY()
+
 
 END SUB
 
