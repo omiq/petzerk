@@ -220,7 +220,7 @@ END SUB
 
 SUB ALIEN_KILL()
 
-         
+         BF=0
                         
  REM TEXTAT ALIEN_RIGHT,ALIEN_BOTTOM,"x"
  REM TEXTAT ALIEN_LEFT,ALIEN_TOP,"x"
@@ -249,13 +249,10 @@ SUB PLAYER_SHOT()
         POKE SCREENADDRESS+(40*BY)+BX,32
         BY=BY-1
         C=PEEK(SCREENADDRESS+(40*BY)+BX)
-
-        IF C=32 THEN 
-            POKE SCREENADDRESS+(40*BY)+BX,34
-        ELSE
-            BF=0
-            CALL ALIEN_KILL()
-        END IF
+        IF C=140 THEN BF=0:POKE SCREENADDRESS+(40*BY)+BX,32
+        IF C=32 THEN POKE SCREENADDRESS+(40*BY)+BX,34
+        IF C=13 OR C=23 THEN CALL ALIEN_KILL()
+        
 
     END IF
 END SUB
