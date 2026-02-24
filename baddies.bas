@@ -44,7 +44,7 @@ DIM OLDALIENS AS INT: OLDALIENS=-1
 DIM LIVE_CNT AS INT
 
 REM C IS CHARACTER READ FROM THE SCREEN
-DIM C AS BYTE: C=32
+DIM FAST C AS BYTE: C=32
 
 
 REM 5 ROWS OF 10 ALIENS
@@ -79,6 +79,15 @@ DIM FAST A AS BYTE
 DIM FAST DIDX AS BYTE
 DIM FAST STR_LINE$ AS STRING * 40
 STR_LINE$ = "                                        "
+
+
+SUB HUD()
+
+    'TEXTAT 0,22,"score:"+STR$(SCORE)+" lives:"+STR$(LIVES)+" high:"+STR$(HIGH_SCORE)+" aliens:"+STR$(ALIENS_COUNT)
+  TEXTAT 0,22," bottom:"+STR$(ALIEN_BOTTOM)+" top:"+STR$(ALIEN_TOP)+" first:"+STR$(TOP_ALIEN)+" last:"+STR$(BOTTOM_ALIEN)
+  
+
+END SUB
 
 
 SUB UPDATE_BOUNDS()
@@ -134,11 +143,11 @@ SUB INIT_ALIENS()
     NEXT X
   NEXT Y
   
-  ALIEN_ROW(1) = " m w m w m w m w m w  "
-  ALIEN_ROW(2) = " m w m w m w m w m w  "
-  ALIEN_ROW(3) = " m w m w m w m w m w  "
-  ALIEN_ROW(4) = " m w m w m w m w m w  "
-  ALIEN_ROW(5) = " m w m w m w m w m w  "
+  ALIEN_ROW(1) = " a b c d e f g h i j  "
+  ALIEN_ROW(2) = " a b c d e f g h i j  "
+  ALIEN_ROW(3) = " a b c d e f g h i j  "
+  ALIEN_ROW(4) = " a b c d e f g h i j  "
+  ALIEN_ROW(5) = " a b c d e f g h i j  "
   CALL UPDATE_BOUNDS()
 
 END SUB
@@ -167,7 +176,7 @@ SUB INITIAL_DRAW()
   TEXTAT 32,18,CHR$(140)+CHR$(32)+CHR$(140)
 
   REM HUD
-  TEXTAT 0,22,"score:"+STR$(SCORE)+" lives:"+STR$(LIVES)+" high:"+STR$(HIGH_SCORE)+" aliens:"+STR$(ALIENS_COUNT)
+  CALL HUD()
   
   CALL DRAW_ALIENS()
 
@@ -247,19 +256,24 @@ SUB ALIEN_KILL()
 
        FOR THIS_ALIEN=BOTTOM_ALIEN TO TOP_ALIEN STEP -1
        
-       
-         IF ALIENS(THIS_ALIEN).STATE=1 AND BY=ALIENS(THIS_ALIEN).Y AND BX=ALIENS(THIS_ALIEN).X THEN
-      
+         IF BY=ALIENS(THIS_ALIEN).Y AND BX=ALIENS(THIS_ALIEN).X THEN
+         
+                 POKE SCREENADDRESS+(40*BY)+BX,42
+        	BF=0
+
+           PRINT STR$(THIS_ALIEN) + ": "+ STR$(ALIENS(THIS_ALIEN).STATE)+" "+STR$(BX) + "=" + STR$(ALIENS(THIS_ALIEN).X) + " " + STR$(BY)  + "=" + STR$(ALIENS(THIS_ALIEN).Y)
+
+
            ALIENS(THIS_ALIEN).STATE=0
            SCORE=SCORE+10
            ALIENS_COUNT=ALIENS_COUNT-1
-           BF=0
+
            REM UPDATE HUD
-           TEXTAT 0,22,"score:"+STR$(SCORE)+" lives:"+STR$(LIVES)+" high:"+STR$(HIGH_SCORE)+" aliens:"+STR$(ALIENS_COUNT)
-  
+           CALL HUD()
+           
            POKE @ALIEN_ROW(5-(ALIEN_BOTTOM-ALIENS(THIS_ALIEN).Y)/2) + (ALIENS(THIS_ALIEN).X-ALIEN_LEFT)+1, 32
            IF ALIENS_COUNT<=0 THEN GAME_OVER=1
-           EXIT FOR
+    
          
          
          END IF
@@ -271,31 +285,25 @@ REM BULLET MOVEMENT
 SUB PLAYER_SHOT()
 
     POKE SCREENADDRESS+(40*BY)+BX,32
-
     
     IF BY < ALIEN_TOP THEN 
     	BF=0
         RETURN 
     ELSE
         BY=BY-1
+
+        C=PEEK(SCREENADDRESS+(40*BY)+BX)
+
+        IF C=32 THEN 
+            POKE SCREENADDRESS+(40*BY)+BX,34
+            TEXTAT 0,0,"                   "
+            RETURN
+        ELSE
+            CALL ALIEN_KILL()
+            RETURN
+        END IF
+
     END IF
-
-    C=PEEK(SCREENADDRESS+(40*BY)+BX)
-    IF C=32 THEN 
-        POKE SCREENADDRESS+(40*BY)+BX,34
-        TEXTAT 0,0,STR$(C) + "        "
-        RETURN
-    ELSE
-        POKE SCREENADDRESS+(40*BY)+BX,0
-        CALL ALIEN_KILL()
-        TEXTAT 0,0," *"+STR$(C)+"* !"
-        RETURN
-    END IF
-    
-    TEXTAT 0,0," x"+STR$(C)+"x   "
-    CALL WAIT_KEY()
-
-
 END SUB
 
 SUB WELCOME()
@@ -367,12 +375,6 @@ CALL INIT_GAME()
   REM GAMEPLAY LOOP
   DO WHILE GAME_OVER <> 1 AND LIVES > 0
   
-   
-    REM PLAYER MOVEMENT 
-    OLDX=X
-    OLDY=Y
-    
-
     REM '
     IF PEEK(158)>0 THEN 
     	GET K$
@@ -380,19 +382,24 @@ CALL INIT_GAME()
         LIVES=0 
         GAME_OVER = 1
       END IF
-      IF K$="D" OR K$="d" THEN X=X+1
-      IF K$="A" OR K$="a" THEN X=X-1
+      
+      IF K$="D" OR K$="d" AND X<39 THEN 
+      	X=X+1
+        TEXTAT X-1,Y," {193} "
+      END IF
+      
+      IF K$="A" OR K$="a" AND X>1  THEN 
+      	X=X-1
+        TEXTAT X-1,Y," {193} "
+      END IF
+      
       IF K$=" " AND BF=0 THEN 
         BX=X
         BY=Y-1
         BF=1
       END IF
-
-      IF OLDX<>X OR OLDY<>Y THEN 
-          POKE SCREENADDRESS+(40*OLDY)+OLDX,32
-          POKE SCREENADDRESS+(40*Y)+X,65
-        END IF
-      END IF
+      
+    END IF
 
     IF PEEK(143) MOD 20 = 0 THEN CALL MOVE_ALIENS() 
     IF BF=1 THEN CALL PLAYER_SHOT()
