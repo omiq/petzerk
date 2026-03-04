@@ -38,7 +38,7 @@ DIM FAST ALIEN_DIRECTION AS INT: ALIEN_DIRECTION=1
 DIM FAST ALIEN_SHOOTING AS BYTE: ALIEN_SHOOTING=0
 DIM FAST ALIEN_MX AS INT
 DIM FAST ALIEN_MY AS INT
-
+DIM I AS INT
 
 REM fake system clock for the alien movement
 DIM FAST GAME_TICK AS INT
@@ -263,28 +263,58 @@ SUB ALIEN_SHOT()
       LIVES=LIVES-1
       IF LIVES<1 THEN GAME_OVER=1
       ALIEN_SHOOTING=0
-      TEXTAT X,Y,"*"
-      TEXTAT X-1,Y,"*"
-      TEXTAT X+1,Y,"*"
-      TEXTAT X,Y-1,"*"
-      TEXTAT X,Y+1,"*"
-      FOR ALIEN_SHOOT_TICK=0 TO 32767/2
-        REM NOP
-      NEXT 
-      TEXTAT X,Y," "
-      TEXTAT X-2,Y,"*"
-      TEXTAT X+2,Y,"*"
-      TEXTAT X,Y-2,"*"
-      TEXTAT X,Y+2,"*"
-      FOR ALIEN_SHOOT_TICK=0 TO 32767/2
-        REM NOP
-      NEXT 
-      TEXTAT X,Y," "
-      TEXTAT X-1,Y," "
-      TEXTAT X+1,Y," "
-      TEXTAT X,Y-1," "
-      TEXTAT X,Y+1," "
-      TEXTAT X-1,Y," {193} "
+
+      REM PLAYER EXPLOSION ANIMATION
+      FOR I=0 TO 5
+        TEXTAT X,Y,"*"
+        TEXTAT X-1,Y,"*"
+        TEXTAT X+1,Y,"*"
+        TEXTAT X,Y-1,"*"
+
+        FOR ALIEN_SHOOT_TICK=0 TO 1000
+          REM NOP
+        NEXT 
+        TEXTAT X,Y," "
+        TEXTAT X-2,Y,"*"
+        TEXTAT X+2,Y,"*"
+        TEXTAT X,Y-2,"*"
+
+        FOR ALIEN_SHOOT_TICK=0 TO 1000
+          REM NOP
+        NEXT 
+        TEXTAT X,Y,"*"
+        TEXTAT X-1,Y,"*"
+        TEXTAT X+1,Y,"*"
+        TEXTAT X,Y-1,"*"
+
+        FOR ALIEN_SHOOT_TICK=0 TO 1000
+          REM NOP
+        NEXT 
+        TEXTAT X-1,Y," "
+        TEXTAT X+1,Y," "
+        TEXTAT X,Y-1," "
+        TEXTAT X,Y+1," "
+        TEXTAT X,Y,"*"
+        TEXTAT X-1,Y-1,"*"
+        TEXTAT X+1,Y-1,"*"
+        TEXTAT X,Y-1,"*"
+
+        REM DELAY FOR THE ANIMATION
+        FOR ALIEN_SHOOT_TICK=0 TO 2000
+          REM NOP
+        NEXT
+
+        TEXTAT X-2,Y," "
+        TEXTAT X+2,Y," "
+        TEXTAT X,Y-2," "
+        TEXTAT X,Y+2," "
+        TEXTAT X-1,Y-1," "
+        TEXTAT X+1,Y-1," "
+        TEXTAT X,Y-1," "
+        TEXTAT X,Y+1," "
+        TEXTAT X-1,Y," {193} "
+      NEXT I
+
       CALL HUD() 
     END IF
 
