@@ -268,6 +268,23 @@ SUB ALIEN_SHOT()
       TEXTAT X+1,Y,"*"
       TEXTAT X,Y-1,"*"
       TEXTAT X,Y+1,"*"
+      FOR ALIEN_SHOOT_TICK=0 TO 32767/2
+        REM NOP
+      NEXT 
+      TEXTAT X,Y," "
+      TEXTAT X-2,Y,"*"
+      TEXTAT X+2,Y,"*"
+      TEXTAT X,Y-2,"*"
+      TEXTAT X,Y+2,"*"
+      FOR ALIEN_SHOOT_TICK=0 TO 32767/2
+        REM NOP
+      NEXT 
+      TEXTAT X,Y," "
+      TEXTAT X-1,Y," "
+      TEXTAT X+1,Y," "
+      TEXTAT X,Y-1," "
+      TEXTAT X,Y+1," "
+      TEXTAT X-1,Y," {193} "
       CALL HUD() 
     END IF
 
