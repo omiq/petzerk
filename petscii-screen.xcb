@@ -6,6 +6,7 @@ DIM WELCOME(1000) AS BYTE @welcome_screen
 DIM WELCOME_XOR(1000) AS BYTE
 PRINT "{clr}    beta test mar 2026"
 
+TEXTAT 15,20,"press a key"
 
 FOR R=0 TO 5
 FOR I=0 TO 32
