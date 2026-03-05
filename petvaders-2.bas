@@ -253,18 +253,18 @@ DIM TMPS$ AS STRING * 32
 
           WIDTH = ALIEN_RIGHT-ALIEN_LEFT+4
           TEXTAT ALIEN_LEFT-1,ALIEN_TOP,LEFT$(STR_LINE$,WIDTH)
-          TMPS$=MID$(ALIEN_ROW(1),2,20) + "  "
+          TMPS$=MID$(ALIEN_ROW(1),2,20) + "   "
           ALIEN_ROW(1)=TMPS$
 
-          TMPS$=MID$(ALIEN_ROW(2),2,20) + "  "
+          TMPS$=MID$(ALIEN_ROW(2),2,20) + "   "
           ALIEN_ROW(2)=TMPS$
 
-          TMPS$=MID$(ALIEN_ROW(3),2,20) + "  "
+          TMPS$=MID$(ALIEN_ROW(3),2,20) + "   "
           ALIEN_ROW(3)=TMPS$
 
-          TMPS$=MID$(ALIEN_ROW(4),2,20) + "  "
+          TMPS$=MID$(ALIEN_ROW(4),2,20) + "   "
           ALIEN_ROW(4)=TMPS$
-
+ 
           TMPS$=MID$(ALIEN_ROW(5),2,20) + "  "
           ALIEN_ROW(5)=TMPS$
           ALIEN_LEFT=ALIEN_LEFT+2
