@@ -275,10 +275,73 @@ SUB ALIEN_FIRING()
   IF ALIEN_SHOOTING=1 THEN
 
     TEXTAT ALIEN_MX,ALIEN_MY," " 
-    IF ALIEN_MY<25 THEN 
+    IF ALIEN_MY<24 THEN 
       ALIEN_MY=ALIEN_MY+1
     ELSE
       ALIEN_SHOOTING=0
+      REM CHECK IF THE ALIEN MISSILE HAS HIT THE PLAYER
+      IF ALIEN_MX=X AND ALIEN_MY=Y THEN 
+        LIVES=LIVES-1
+        IF LIVES<1 THEN GAME_OVER=1
+        ALIEN_SHOOTING=0
+
+        REM PLAYER EXPLOSION ANIMATION
+        FOR I=0 TO 5
+          TEXTAT X,Y,"*"
+          TEXTAT X-1,Y,"*"
+          TEXTAT X+1,Y,"*"
+          TEXTAT X,Y-1,"*"
+
+          FOR ALIEN_SHOOT_TICK=0 TO 1000
+            REM NOP
+          NEXT 
+          TEXTAT X,Y," "
+          TEXTAT X-2,Y,"*"
+          TEXTAT X+2,Y,"*"
+          TEXTAT X,Y-2,"*"
+
+          FOR ALIEN_SHOOT_TICK=0 TO 1000
+            REM NOP
+          NEXT 
+          TEXTAT X,Y,"*"
+          TEXTAT X-1,Y,"*"
+          TEXTAT X+1,Y,"*"
+          TEXTAT X,Y-1,"*"
+
+          FOR ALIEN_SHOOT_TICK=0 TO 1000
+            REM NOP
+          NEXT 
+          TEXTAT X-1,Y," "
+          TEXTAT X+1,Y," "
+          TEXTAT X,Y-1," "
+          TEXTAT X,Y+1," "
+          TEXTAT X,Y,"*"
+          TEXTAT X-1,Y-1,"*"
+          TEXTAT X+1,Y-1,"*"
+          TEXTAT X,Y-1,"*"
+
+          REM DELAY FOR THE ANIMATION
+          FOR ALIEN_SHOOT_TICK=0 TO 2000
+            REM NOP
+          NEXT
+
+          TEXTAT X-2,Y," "
+          TEXTAT X+2,Y," "
+          TEXTAT X,Y-2," "
+          TEXTAT X,Y+2," "
+          TEXTAT X-1,Y-1," "
+          TEXTAT X+1,Y-1," "
+          TEXTAT X,Y-1," "
+          TEXTAT X,Y+1," "
+          TEXTAT X-1,Y," {193} "
+        NEXT I
+
+        CALL HUD() 
+
+        ELSE  
+          RETURN
+        
+      END IF
     END IF
 
     CH=PEEK(SCREENADDRESS+(40*(ALIEN_MY))+ALIEN_MX)
@@ -288,65 +351,7 @@ SUB ALIEN_FIRING()
       TEXTAT ALIEN_MX,ALIEN_MY," " 
     END IF
     
-    REM CHECK IF THE ALIEN MISSILE HAS HIT THE PLAYER
-    IF CH=65 THEN 
-      LIVES=LIVES-1
-      IF LIVES<1 THEN GAME_OVER=1
-      ALIEN_SHOOTING=0
-
-      REM PLAYER EXPLOSION ANIMATION
-      FOR I=0 TO 5
-        TEXTAT X,Y,"*"
-        TEXTAT X-1,Y,"*"
-        TEXTAT X+1,Y,"*"
-        TEXTAT X,Y-1,"*"
-
-        FOR ALIEN_SHOOT_TICK=0 TO 1000
-          REM NOP
-        NEXT 
-        TEXTAT X,Y," "
-        TEXTAT X-2,Y,"*"
-        TEXTAT X+2,Y,"*"
-        TEXTAT X,Y-2,"*"
-
-        FOR ALIEN_SHOOT_TICK=0 TO 1000
-          REM NOP
-        NEXT 
-        TEXTAT X,Y,"*"
-        TEXTAT X-1,Y,"*"
-        TEXTAT X+1,Y,"*"
-        TEXTAT X,Y-1,"*"
-
-        FOR ALIEN_SHOOT_TICK=0 TO 1000
-          REM NOP
-        NEXT 
-        TEXTAT X-1,Y," "
-        TEXTAT X+1,Y," "
-        TEXTAT X,Y-1," "
-        TEXTAT X,Y+1," "
-        TEXTAT X,Y,"*"
-        TEXTAT X-1,Y-1,"*"
-        TEXTAT X+1,Y-1,"*"
-        TEXTAT X,Y-1,"*"
-
-        REM DELAY FOR THE ANIMATION
-        FOR ALIEN_SHOOT_TICK=0 TO 2000
-          REM NOP
-        NEXT
-
-        TEXTAT X-2,Y," "
-        TEXTAT X+2,Y," "
-        TEXTAT X,Y-2," "
-        TEXTAT X,Y+2," "
-        TEXTAT X-1,Y-1," "
-        TEXTAT X+1,Y-1," "
-        TEXTAT X,Y-1," "
-        TEXTAT X,Y+1," "
-        TEXTAT X-1,Y," {193} "
-      NEXT I
-
-      CALL HUD() 
-    END IF
+    
 
   END IF
 
