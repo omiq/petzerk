@@ -1,10 +1,12 @@
 DIM I AS INT
 DIM R AS INT
+DIM SX AS BYTE
 DIM FLIP AS BYTE: FLIP=0
 DIM K$ AS STRING * 1: K$=""
 DIM DELAY AS INT
 DIM WELCOME(1000) AS BYTE @welcome_screen
 DIM WELCOME_XOR(1000) AS BYTE
+DIM GAME_OVER$ AS STRING * 96
 
 SUB CHECK_KEY()
 
@@ -193,18 +195,36 @@ END SUB
 
 SUB OVER_PETSCII()
 
-
+    SX=7
     K$=""
+    GAME_OVER$=" "
+    FOR R = 1 TO 10
+    GAME_OVER$=GAME_OVER$+"game over game over "
+    NEXT R
+    
     MEMSHIFT @over_screen,32768,1000
     DO WHILE K$=""
 	CALL CHECK_KEY()
+        TEXTAT 33,0,MID$(GAME_OVER$,SX,7)
+        TEXTAT 33,1,MID$(GAME_OVER$,SX+8,7)
+        TEXTAT 33,2,MID$(GAME_OVER$,SX+16,7)
+        TEXTAT 33,3,MID$(GAME_OVER$,SX+24,7)
+        TEXTAT 33,4,MID$(GAME_OVER$,SX+32,7)
+        TEXTAT 33,5,MID$(GAME_OVER$,SX+40,7)
+
+        IF SX<=48 THEN 
+          SX=SX+1
+        ELSE
+          SX=0
+        END IF
         
+        FOR DELAY = 1 TO 3500: NEXT DELAY
     LOOP
 
 
 END SUB
 
-CALL WELCOME_PETSCII()
+REM CALL WELCOME_PETSCII()
 CALL OVER_PETSCII()
 
 welcome_screen:
